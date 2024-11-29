@@ -11,6 +11,7 @@
     <style>
         .l_items{
             text-align: center;
+            padding-top: 25px;
            
             
         }
@@ -34,7 +35,7 @@
             <label for="passwd">Password</label><br>
             <input type="password" name="passwd" placeholder="Password" class="input"><br><br>
             <input type="submit" value="LOGIN" class="btn btn-dark">
-            <a href="register" class="btn btn-warning">REGISTER</a>
+            <a href="register" class="btn btn-dark">REGISTER</a>
             {% if messages %}
             {% for message in messages %}
             <div class="alert  alert-dismissible">
