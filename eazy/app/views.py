@@ -51,8 +51,8 @@ def add_prod(req):
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
             img=req.FILES['img']
-            
-            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img)
+            prd_dis=req.POST['prd_dis']
+            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=prd_dis)
             data.save()
             return redirect(add_prod)
         else:
@@ -67,15 +67,17 @@ def edit(req,pid):
             prd_name=req.POST['prd_name']
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
+            prd_dis=req.POST['prd_dis']
+
             
             img=req.FILES.get('img')
             if img:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=prd_dis)
                 data=Product.objects.get(pk=pid)
                 data.img=img
                 data.save()
             else:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=prd_dis)
             return redirect(home_ad)
         else:
             data=Product.objects.get(pk=pid)
@@ -90,6 +92,10 @@ def delete(req,pid):
     os.remove('media/'+og_path)
     data.delete()
     return redirect(home_ad)
+
+def booking (req):
+    buy=Buy.objects.all()[::-1] 
+    return render (req,'shop/booking.html',{'buy':buy})
 
 
     #------------------------user--------------------------------
@@ -121,3 +127,48 @@ def user_home(req):
 def view_pro(req,pid):
         data=Product.objects.get(pk=pid)
         return render(req,'user/view_pro.html',{'data':data})
+
+
+
+def add_to_cart(req,pid):
+    prod=Product.objects.get(pk=pid)
+    user=User.objects.get(username=req.session['user'])
+    data=Cart.objects.create(user=user,product=prod)
+    data.save()
+    return redirect(view_cart)
+
+def view_cart(req):
+    user=User.objects.get(username=req.session['user'])
+    cart_dtls=Cart.objects.filter(user=user)
+    return render(req,'user/cart.html',{'cart_dtls':cart_dtls})
+
+def delete_cart(req,id):
+    cart=Cart.objects.get(pk=id)
+    cart.delete()
+    return redirect(view_cart)
+
+def user_buy(req,cid):
+    user=User.objects.get(username=req.session['user'])
+    cart=Cart.objects.get(pk=cid)
+    product=cart.product
+    price=cart.product.ofr_price
+    buy=Buy.objects.create(user=user,product=product,price=price)
+    buy.save()
+    return redirect(view_cart)
+def user_buy1(req,pid):
+     user=User.objects.get(username=req.session['user'])
+     product=Product.objects.get(pk=pid)
+     price=product.ofr_price
+     buy=Buy.objects.create(user=user,product=product,price=price)
+     buy.save()
+     return redirect(user_home)
+
+
+
+
+                                            
+                                            
+def user_bookings(req):
+    user=User.objects.get(username=req.session['user'])
+    buy=Buy.objects.filter(user=user)[::-1]
+    return render(req,'user/bookings.html',{'buy':buy})
