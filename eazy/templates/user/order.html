@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Page</title>
+</head>
+<body>
+    <h1>Order Your Shoes</h1>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h2>Select Products</h2>
+        {% for product in products %}
+        <div>
+            <label for="product_{{ product.id }}">
+                <input type="checkbox" name="product_id" value="{{ product.id }}">
+                {{ product.name }} - ${{ product.price }}
+            </label>
+            Quantity: <input type="number" name="quantity_{{ product.id }}" min="1" value="1">
+        </div>
+        {% endfor %}
+
+        <button type="submit">Place Order</button>
+    </form>
+</body>
+</html>

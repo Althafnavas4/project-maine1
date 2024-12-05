@@ -16,30 +16,92 @@
         .card:hover{
             box-shadow: 0 0 15px;
         }
+        
+
+        
+/* ------------------------ */
+
+/* styles.css */
+
+/* Change navbar background color */
+.navbar {
+    background-color: #f30000 !important; /* Dark gray background */
+}
+
+/* Change navbar brand text color */
+.navbar-brand {
+    color: #ffffff !important; /* Tomato color */
+    font-weight: bold;
+}
+
+/* Change link color */
+.navbar-nav .nav-link {
+    color: #000000 !important; /* White text */
+    font-size: 1.1rem;
+}
+
+/* Hover effect for links */
+.navbar-nav .nav-link:hover {
+    color: #f8f8f8 !important; /* Tomato color on hover */
+    text-decoration: underline;
+}
+
+/* Active link color */
+.navbar-nav .nav-link.active {
+    color: #f5e1d9 !important; /* Orange color for active link */
+}
+
+/* Custom responsive navbar behavior (example for large screens) */
+@media (max-width: 992px) {
+    .navbar-nav {
+        background-color: #ffffff; /* Dark background on mobile */
+    }
+}
+
+
+
     </style>
 </head>
 <body>
-  nav>
-  <ul>
-      <li><a href="userprd">Shop</a></li>
-      <li><a href="view_cart">Cart</a></li>
-      <li><a href="user_booking">Booking</a></li>
-      <li><a  href="shp_logout">Log out</a>
-  </ul>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">EAZY</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="userprd">Shop</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="view_cart">Cart</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"  href="user_booking">booking</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="eazy_logout">logout</a>
+              </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"></a>
+                </li>
+            </ul>
+        </div>
+    </div>
 </nav>
-    <h2>Home</h2>
+    <h2></h2>
     <div class="container">
       <div class="row">
         {% for product in data %}
         <div class="col-lg-3">
             <a href="view_pro/{{product.pk}}">
                 <div class="card">
-                    <img class="card-img-top" src="{{product.img.url}}" alt="Card image" style="height: 400px; width: 100%;">
-                    <div class="card-body">
-                      <h4 class="card-title">{{product.name}}</h4>
-                      <p class="card-text">{{product.dis}}</p>
-                      <s><p class="card-text">₹{{product.price}}</p></s>
-                      <h4 class="card-title">₹{{product.ofr_price}}</h4>
+                  <img class="card-img" src="{{product.img.url}}" alt="Card image">
+              <div class="card-body">
+                <h4 class="card-title">{{product.name}}</h4>
+                <p class="card-text">₹{{product.price}}</p>
+                <h4 class="card-title">₹{{product.offer_price}}</h4>
                     </div>
                   </div>
             </a>

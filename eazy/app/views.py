@@ -4,6 +4,12 @@ from .models import *
 import os
 from django.contrib.auth.models import *
 from django.contrib import messages
+from django.http import HttpResponse
+from .models import Product, Order, OrderItem
+from .forms import OrderForm
+
+
+
 
 
 # Create your views here.
@@ -51,8 +57,8 @@ def add_prod(req):
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
             img=req.FILES['img']
-            prd_dis=req.POST['prd_dis']
-            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=prd_dis)
+            
+            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img)
             data.save()
             return redirect(add_prod)
         else:
@@ -67,17 +73,17 @@ def edit(req,pid):
             prd_name=req.POST['prd_name']
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
-            prd_dis=req.POST['prd_dis']
+            
 
             
             img=req.FILES.get('img')
             if img:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=prd_dis)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price)
                 data=Product.objects.get(pk=pid)
                 data.img=img
                 data.save()
             else:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=prd_dis)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price)
             return redirect(home_ad)
         else:
             data=Product.objects.get(pk=pid)
@@ -161,14 +167,14 @@ def user_buy1(req,pid):
      price=product.offer_price
      buy=Buy.objects.create(user=user,product=product,price=price)
      buy.save()
-     return redirect(user_home)
+     return redirect(order_page)
 
 
 
 
                                             
                                             
-def user_bookings(req):
+def user_booking(req):
     user=User.objects.get(username=req.session['user'])
     buy=Buy.objects.filter(user=user)[::-1]
     return render(req,'user/bookings.html',{'buy':buy})
@@ -179,3 +185,43 @@ def userprd(req):
         return render(req,'user/shop.html',{'data':data})
     else:
         return redirect(user_home)
+    
+
+
+
+   
+
+def order_page(request):
+    # Display available products to the user
+    products = Product.objects.all()
+    
+    if request.method == 'POST':
+        # Handle form submission for the order
+        form = OrderForm(request.POST)
+        
+        if form.is_valid():
+            order = form.save(commit=False)
+            # Calculate total price for the order
+            total_price = 0
+            for prd_id, quantity in request.POST.getlist('prd_id'):
+
+
+                product = Product.objects.get(id=prd_id)
+                total_price += product.price * int(quantity)
+            
+            order.total_price = total_price
+            order.save()
+            
+            # Add ordered products to the order
+            for prd_id, quantity in request.POST.getlist('prd_id'):
+                product = Product.objects.get(id=prd_id)
+                order_item = OrderItem(order=order, product=product, quantity=int(quantity), price=product.price)
+                order_item.save()
+            
+            return redirect('user/order_confirmation.html', order_id=order.id)
+    else:
+        form = OrderForm()
+
+    return render(request, 'user/order.html', {'form': form, 'products': products})
+
+
