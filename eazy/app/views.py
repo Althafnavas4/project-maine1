@@ -172,3 +172,10 @@ def user_bookings(req):
     user=User.objects.get(username=req.session['user'])
     buy=Buy.objects.filter(user=user)[::-1]
     return render(req,'user/bookings.html',{'buy':buy})
+
+def userprd(req):
+    if 'user' in req.session:
+        data=Product.objects.all()
+        return render(req,'user/shop.html',{'data':data})
+    else:
+        return redirect(user_home)
