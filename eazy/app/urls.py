@@ -31,6 +31,7 @@ urlpatterns=[
     path('booking',views.booking),
     path('user_booking',views.user_booking),
     path('userprd',views.userprd),
-    path('order/', views.order_page, name='order_page'),
+    path('order/', views.order, name='order'),
+    path('order_success/', views.order_success, name='order_success'),
     
 ]

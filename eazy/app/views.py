@@ -167,7 +167,7 @@ def user_buy1(req,pid):
      price=product.offer_price
      buy=Buy.objects.create(user=user,product=product,price=price)
      buy.save()
-     return redirect(order_page)
+     return redirect(order)
 
 
 
@@ -191,37 +191,17 @@ def userprd(req):
 
    
 
-def order_page(request):
-    # Display available products to the user
-    products = Product.objects.all()
-    
+def order(request):
     if request.method == 'POST':
-        # Handle form submission for the order
         form = OrderForm(request.POST)
-        
         if form.is_valid():
-            order = form.save(commit=False)
-            # Calculate total price for the order
-            total_price = 0
-            for prd_id, quantity in request.POST.getlist('prd_id'):
-
-
-                product = Product.objects.get(id=prd_id)
-                total_price += product.price * int(quantity)
-            
-            order.total_price = total_price
-            order.save()
-            
-            # Add ordered products to the order
-            for prd_id, quantity in request.POST.getlist('prd_id'):
-                product = Product.objects.get(id=prd_id)
-                order_item = OrderItem(order=order, product=product, quantity=int(quantity), price=product.price)
-                order_item.save()
-            
-            return redirect('user/order_confirmation.html', order_id=order.id)
+            form.save()
+            return redirect('order_success')
     else:
         form = OrderForm()
 
-    return render(request, 'user/order.html', {'form': form, 'products': products})
+    return render(request, 'user/order.html', {'form': form})
 
+def order_success(request):
+    return render(request, 'user/order_success.html')
 

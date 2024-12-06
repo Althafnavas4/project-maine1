@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Page</title>
-    
+    <title>Order Success</title>
+   
 </head>
-<body>
-    <style>
-        /* Basic reset */
+
+<style>
+    /* Basic reset */
 * {
     margin: 0;
     padding: 0;
@@ -84,14 +84,13 @@ button:hover {
     margin-top: 50px;
 }
 
-    </style>
+</style>
+<body>
     <div class="container">
-        <h1>Place Your Order</h1>
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Place Order</button>
-        </form>
+        <div class="success-message">
+            <h1>Order Successfully Placed!</h1>
+            <p>Thank you for your order! We will process it shortly.</p>
+        </div>
     </div>
 </body>
 </html>
