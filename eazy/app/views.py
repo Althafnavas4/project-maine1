@@ -5,8 +5,8 @@ import os
 from django.contrib.auth.models import *
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Product, Order, OrderItem
-from .forms import OrderForm
+from .models import Product
+
 
 
 
@@ -56,9 +56,10 @@ def add_prod(req):
             prd_name=req.POST['prd_name']
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
+            prd_dis=req.POST['prd_dis']
             img=req.FILES['img']
             
-            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img)
+            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=prd_dis)
             data.save()
             return redirect(add_prod)
         else:
@@ -167,7 +168,7 @@ def user_buy1(req,pid):
      price=product.offer_price
      buy=Buy.objects.create(user=user,product=product,price=price)
      buy.save()
-     return redirect(order)
+     return redirect(order_success)
 
 
 
@@ -191,16 +192,7 @@ def userprd(req):
 
    
 
-def order(request):
-    if request.method == 'POST':
-        form = OrderForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('order_success')
-    else:
-        form = OrderForm()
 
-    return render(request, 'user/order.html', {'form': form})
 
 def order_success(request):
     return render(request, 'user/order_success.html')

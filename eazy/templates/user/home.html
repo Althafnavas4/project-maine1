@@ -202,10 +202,10 @@ footer p {
             {% for product in products %}
             <div class="product-card">
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                <h3>{{ product.name }}</h3>
-                <p>${{ product.price }}</p>
-                <h4><p>${{ product.dic }}</p></h4>
-                <s><p>${{ product.offer_price }}</p></s>
+                <h4 class="card-title">{{product.name}}</h4>
+                <p class="card-text">{{product.dis}}</p>
+                <s><p class="card-text">₹{{product.price}}</p></s>
+                <h4 class="card-title">₹{{product.ofr_price}}</h4>
                 <a href="#" class="btn-view-details">View Details</a>
             </div>
             {% endfor %}

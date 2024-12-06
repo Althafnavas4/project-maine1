@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='order',
             name='quantity',
-            field=models.PositiveIntegerField(default='new'),
+            field=models.PositiveIntegerField(default=1),
             preserve_default=False,
         ),
     ]

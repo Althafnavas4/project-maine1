@@ -10,7 +10,23 @@
 
 
 </head>
+<style>
+    footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+footer p {
+    font-size: 1rem;
+}
+</style>
 <body>
+    
     <div class="container">
         <div class="row">
             {% for i in buy %}
@@ -19,9 +35,13 @@
                 {{i.product.name}}
                 {{i.price}}
                 {{i.date}}
+                
             </div>
             {% endfor %}
         </div>
     </div>
+    <footer>
+        <p>&copy; 2024 Footwear Store. All rights reserved.</p>
+    </footer>
 </body>
 </html>
