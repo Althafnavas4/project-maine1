@@ -56,10 +56,10 @@ def add_prod(req):
             prd_name=req.POST['prd_name']
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
-            prd_dis=req.POST['prd_dis']
+            dis=req.POST['dis']
             img=req.FILES['img']
             
-            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=prd_dis)
+            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=dis)
             data.save()
             return redirect(add_prod)
         else:
@@ -74,17 +74,17 @@ def edit(req,pid):
             prd_name=req.POST['prd_name']
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
-            
+            dis=req.POST['dis']
 
             
             img=req.FILES.get('img')
             if img:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=dis)
                 data=Product.objects.get(pk=pid)
                 data.img=img
                 data.save()
             else:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=dis)
             return redirect(home_ad)
         else:
             data=Product.objects.get(pk=pid)
