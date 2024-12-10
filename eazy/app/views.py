@@ -6,7 +6,12 @@ from django.contrib.auth.models import *
 from django.contrib import messages
 from django.http import HttpResponse
 from .models import Product
+from .forms import CustomPasswordResetForm
+from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView
 
+from django.contrib.auth.forms import AuthenticationForm
+
+from .forms import LoginForm, CustomPasswordResetForm
 
 
 
@@ -17,10 +22,12 @@ from .models import Product
 def eazy_login(req):
     if 'eazy' in req.session:
         return redirect(home_ad)
-    if req.method=='POST':
-        uname=req.POST['uname']
-        password=req.POST['passwd']
-        data=authenticate(username=uname,password=password)
+    if req.method == 'POST':
+        form = AuthenticationForm(req, data=req.POST)
+        if form.is_valid():
+            uname = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            data = authenticate(username=uname, password=password)
         if data:
             if data.is_superuser:
                 login(req,data)
@@ -37,6 +44,10 @@ def eazy_login(req):
     else:
         return render(req,'login.html')
     
+    
+        
+      
+    
 def home_ad(req):
     if 'eazy' in req.session:
         data=Product.objects.all()
@@ -48,6 +59,13 @@ def eazy_logout(req):
     req.session.flush()          #delete session
     logout(req)
     return redirect(eazy_login)
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'password_reset.html'
+    form_class = CustomPasswordResetForm
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'password_reset_done.html'
 
 def add_prod(req):
     if 'eazy' in req.session:

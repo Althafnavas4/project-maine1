@@ -36,7 +36,7 @@
             <label for="passwd">Password</label><br>
             <input type="password" name="passwd" placeholder="Password" class="input"><br><br>
             <input type="submit" value="LOGIN" class="btn btn-dark">
-            <a href="register" class="btn btn-dark">REGISTER</a>
+            <a href="register">REGISTER</a>
             {% if messages %}
             {% for message in messages %}
             <div class="alert  alert-dismissible">
@@ -47,6 +47,7 @@
             {% endif %}
         </div>
     </form>
-    <h1></h1>
+    <a href="{% url 'password_reset' %}">Forgot your password?</a>
+    
 </body>
 </html>
