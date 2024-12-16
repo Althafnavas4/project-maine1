@@ -11,7 +11,7 @@
     <style>
         .l_items{
             text-align: center;
-            padding-top: 25px;
+            padding-top: 100px;
             color: white;
            
             
@@ -22,6 +22,10 @@
    
     
     background-attachment: fixed;
+        }
+        .r{
+            padding-left: 50%;
+            color: blue;
         }
 
     </style>
@@ -47,7 +51,7 @@
             {% endif %}
         </div>
     </form>
-    <a href="{% url 'password_reset' %}">Forgot your password?</a>
+    <a class="r" href="{% url 'password_reset' %}">Forgot your password?</a>
     
 </body>
 </html>

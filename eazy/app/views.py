@@ -22,12 +22,11 @@ from .forms import LoginForm, CustomPasswordResetForm
 def eazy_login(req):
     if 'eazy' in req.session:
         return redirect(home_ad)
-    if req.method == 'POST':
-        form = AuthenticationForm(req, data=req.POST)
-        if form.is_valid():
-            uname = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            data = authenticate(username=uname, password=password)
+    if req.method=='POST':
+        uname=req.POST['uname']
+        password=req.POST['passwd']
+        data=authenticate(username=uname,password=password)
+        
         if data:
             if data.is_superuser:
                 login(req,data)
@@ -76,6 +75,7 @@ def add_prod(req):
             ofr_price=req.POST['ofr_price']
             dis=req.POST['dis']
             img=req.FILES['img']
+            
             
             data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=dis)
             data.save()
