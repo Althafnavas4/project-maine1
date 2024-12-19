@@ -30,13 +30,14 @@ class Buy(models.Model):
 
 
 
-class ShoeSize(models.Model):
-    shoe = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sizes')
-    size = models.CharField(max_length=10)  # e.g., 'US 7', 'EU 40'
-    stock = models.IntegerField(default=0)  # Number of items in stock for the size
+
+class Size(models.Model):
+    prod = models.ForeignKey(Product, related_name='sizes', on_delete=models.CASCADE)
+    size = models.CharField(max_length=10)
+    stock_quantity = models.PositiveIntegerField(default=0)
     
     def __str__(self):
-        return f"{self.shoe.name} - {self.size}"
+        return f"{self.shoe.name} - Size {self.size}"
 
 
 

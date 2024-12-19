@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth import authenticate,login,logout
 from .models import *
 import os
@@ -13,6 +13,11 @@ from django.contrib.auth.forms import AuthenticationForm
 
 from .forms import LoginForm, CustomPasswordResetForm
 
+
+
+
+
+from .forms import SizeSelectionForm
 
 
 
@@ -151,7 +156,23 @@ def user_home(req):
     
 def view_pro(req,pid):
         data=Product.objects.get(pk=pid)
-        return render(req,'user/view_pro.html',{'data':data})
+      
+        
+
+        shoe = get_object_or_404(Product, pk=pid)
+        form = SizeSelectionForm(shoe=shoe)
+
+        if req.method == 'POST':
+            form = SizeSelectionForm(shoe=shoe, data=req.POST)
+            if form.is_valid():
+                selected_size = form.cleaned_data['size']
+            # Here you could handle the logic for adding the shoe to a shopping cart, etc.
+            return render(req, 'user/view_pro.html', {'shoe': shoe, 'size': selected_size})
+
+        return render(req, 'user/view_pro.html', {'shoe': shoe, 'form': form})
+
+
+        
 
 
 
