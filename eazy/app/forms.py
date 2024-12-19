@@ -21,16 +21,6 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 
-from .models import Size
-
-class SizeSelectionForm(forms.Form):
-    size = forms.ChoiceField(choices=[], label="Select Size")
-
-    def __init__(self, shoe, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Dynamically add size choices based on available sizes for the shoe
-        available_sizes = shoe.sizes.all()
-        self.fields['size'].choices = [(size.id, size.size) for size in available_sizes]
 
 
 

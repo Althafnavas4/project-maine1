@@ -17,7 +17,6 @@ from .forms import LoginForm, CustomPasswordResetForm
 
 
 
-from .forms import SizeSelectionForm
 
 
 
@@ -73,20 +72,33 @@ class CustomPasswordResetDoneView(PasswordResetDoneView):
 
 def add_prod(req):
     if 'eazy' in req.session:
-        if req.method=='POST':
-            prd_id=req.POST['prd_id']
-            prd_name=req.POST['prd_name']
-            prd_price=req.POST['prd_price']
-            ofr_price=req.POST['ofr_price']
-            dis=req.POST['dis']
-            img=req.FILES['img']
-            
-            
-            data=Product.objects.create(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,img=img,dis=dis)
-            data.save()
+        if req.method == 'POST':
+            prd_id = req.POST['prd_id']
+            prd_name = req.POST['prd_name']
+            prd_price = req.POST['prd_price']
+            ofr_price = req.POST['ofr_price']
+            dis = req.POST['dis']
+            img = req.FILES['img']
+            sizes = req.POST.getlist('sizes')
+
+            product = Product.objects.create(
+                pro_id=prd_id,
+                name=prd_name,
+                price=prd_price,
+                offer_price=ofr_price,
+                img=img,
+                dis=dis
+            )
+
+            # Associate selected sizes
+            for size in sizes:
+                size_obj, created = Size.objects.get_or_create(size=size)
+                product.sizes.add(size_obj)
+
             return redirect(add_prod)
         else:
-            return render(req,'shop/add_prod.html')
+            all_sizes = Size.objects.all()
+            return render(req, 'shop/add_prod.html', {'all_sizes': all_sizes})
     else:
         return redirect(eazy_login)
     
@@ -154,60 +166,78 @@ def user_home(req):
     else:
         return redirect(eazy_login)
     
-def view_pro(req,pid):
-        data=Product.objects.get(pk=pid)
-      
+def view_pro(req, pid):
+    product = get_object_or_404(Product, pk=pid)
+    if 'user' in req.session:
+        return render(req, 'user/view_pro.html', {'data': product, 'sizes': product.sizes.all(), 'show_sizes': True})
+    else:
+        return render(req, 'user/view_pro.html', {'data': product, 'sizes': product.sizes.all(), 'show_sizes': False})
+
+
         
 
-        shoe = get_object_or_404(Product, pk=pid)
-        form = SizeSelectionForm(shoe=shoe)
 
+
+def add_to_cart(req, pid):
+    if 'user' in req.session:
         if req.method == 'POST':
-            form = SizeSelectionForm(shoe=shoe, data=req.POST)
-            if form.is_valid():
-                selected_size = form.cleaned_data['size']
-            # Here you could handle the logic for adding the shoe to a shopping cart, etc.
-            return render(req, 'user/view_pro.html', {'shoe': shoe, 'size': selected_size})
-
-        return render(req, 'user/view_pro.html', {'shoe': shoe, 'form': form})
-
-
-        
-
+            product = get_object_or_404(Product, pk=pid)
+            Size = req.POST.get('size')  # Get the selected size as a string
+            user = User.objects.get(username=req.session['user'])
+            
+            # Create a new cart item with the selected size
+            Cart.objects.create(user=user, product=product, size=Size)
+            messages.success(req, 'Product added to cart successfully.')
+        return redirect(view_cart)
+    return redirect('eazy_login')
 
 
-def add_to_cart(req,pid):
-    prod=Product.objects.get(pk=pid)
-    user=User.objects.get(username=req.session['user'])
-    data=Cart.objects.create(user=user,product=prod)
-    data.save()
-    return redirect(view_cart)
+def view_cart(request):
+    if 'user' in request.session:
+        user = request.user
+        cart_items = Cart.objects.filter(user=user)
+        total_price = sum(float(item.product.offer_price) for item in cart_items) if cart_items else 0
+        return render(request, 'user/cart.html', {'cart_items': cart_items, 'total_price': total_price})
+    else:
+        return redirect('eazy_login')
 
-def view_cart(req):
-    user=User.objects.get(username=req.session['user'])
-    cart_dtls=Cart.objects.filter(user=user)
-    return render(req,'user/cart.html',{'cart_dtls':cart_dtls})
 
-def delete_cart(req,id):
-    cart=Cart.objects.get(pk=id)
-    cart.delete()
-    return redirect(view_cart)
 
-def user_buy(req,cid):
-    user=User.objects.get(username=req.session['user'])
-    cart=Cart.objects.get(pk=cid)
-    product=cart.product
-    price=cart.product.offer_price
-    buy=Buy.objects.create(user=user,product=product,price=price)
-    buy.save()
-    return redirect(view_cart)
-def user_buy1(req,pid):
-     user=User.objects.get(username=req.session['user'])
-     product=Product.objects.get(pk=pid)
-     price=product.offer_price
-     buy=Buy.objects.create(user=user,product=product,price=price)
-     buy.save()
-     return redirect(order_success)
+def delete_cart(request, id):
+    if 'user' in request.session:
+        cart_item = get_object_or_404(Cart, pk=id)
+        cart_item.delete()
+        messages.success(request, 'Item removed from cart.')
+        return redirect(view_cart)
+    else:
+        return redirect('eazy_login')
+
+def user_buy(request, id):
+    if 'user' in request.session:
+        cart_item = get_object_or_404(Cart, pk=id)
+        user = request.user
+        product = cart_item.product
+        size = cart_item.size
+        price = product.offer_price
+
+        # Create a purchase record
+        Buy.objects.create(user=user, product=product, size=size, price=price)
+        cart_item.delete()  # Remove the item from the cart after purchase
+        messages.success(request, 'Purchase successful!')
+        return redirect('view_cart')
+    else:
+        return redirect('eazy_login')
+def user_buy1(req, pid):
+    if 'user' in req.session:
+        if req.method == 'POST':
+            product = get_object_or_404(Product, pk=pid)
+            size_id = req.POST.get('size')
+            size = get_object_or_404(Size, pk=size_id)
+            user = User.objects.get(username=req.session['user'])
+            Buy.objects.create(user=user, product=product, size=size, price=product.offer_price)
+            messages.success(req, 'Purchase successful.')
+        return redirect('order_success')
+    return redirect('eazy_login')
 
 
 
