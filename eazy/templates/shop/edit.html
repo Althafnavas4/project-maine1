@@ -50,14 +50,28 @@
           </div>
 
           <div class="mb-2">
-            <label for="dis" class="form-label">Discription:</label>
-            <input type="text" class="form-control" placeholder="Enter Product details" name="dis">
+            <label for="dis" class="form-label">Description:</label>
+            <input type="text" class="form-control" placeholder="Enter Product details" name="dis" value="{{product.dis}}">
           </div>
           
           <div class="mb-2">
             <label for="ofrprice" class="form-label">Offer Price:</label>
             <input type="number" class="form-control" placeholder="Enter Offer price" name="ofr_price" value="{{product.offer_price}}">
           </div>
+
+          <!-- Size Selection -->
+          <div class="mb-2">
+            <label for="sizes" class="form-label">Select Sizes:</label>
+            <select name="sizes" class="form-control" multiple>
+                {% for size in all_sizes %}
+                    <option value="{{ size.size }}"
+                            {% if size in selected_sizes %}selected{% endif %}>
+                        {{ size.size }}
+                    </option>
+                {% endfor %}
+            </select>
+          </div>
+
           <div class="form-check mb-2">
           </div>
           <div>

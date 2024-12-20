@@ -110,11 +110,11 @@ def edit(req,pid):
             prd_price=req.POST['prd_price']
             ofr_price=req.POST['ofr_price']
             dis=req.POST['dis']
-
+            sizes = req.POST.getlist('sizes')
             
             img=req.FILES.get('img')
             if img:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=dis)
+                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=dis,sizes=sizes)
                 data=Product.objects.get(pk=pid)
                 data.img=img
                 data.save()
@@ -182,11 +182,12 @@ def add_to_cart(req, pid):
     if 'user' in req.session:
         if req.method == 'POST':
             product = get_object_or_404(Product, pk=pid)
-            Size = req.POST.get('size')  # Get the selected size as a string
+            size_name = req.POST.get('size')  # Get the selected size as a string
+            size = get_object_or_404(Size, size=size_name)  # Fetch Size by its name
             user = User.objects.get(username=req.session['user'])
-            
+
             # Create a new cart item with the selected size
-            Cart.objects.create(user=user, product=product, size=Size)
+            Cart.objects.create(user=user, product=product, size=size)
             messages.success(req, 'Product added to cart successfully.')
         return redirect(view_cart)
     return redirect('eazy_login')
@@ -229,14 +230,17 @@ def user_buy(request, id):
         return redirect('eazy_login')
 def user_buy1(req, pid):
     if 'user' in req.session:
-        if req.method == 'POST':
+         if req.method == 'POST':
             product = get_object_or_404(Product, pk=pid)
-            size_id = req.POST.get('size')
-            size = get_object_or_404(Size, pk=size_id)
+            size_name = req.POST.get('size')  # Get the selected size as a string
+            size = get_object_or_404(Size, size=size_name)  # Fetch Size by its name
             user = User.objects.get(username=req.session['user'])
-            Buy.objects.create(user=user, product=product, size=size, price=product.offer_price)
+
+            # Create a new cart item with the selected size
+            Cart.objects.create(user=user, product=product, size=size)
+
             messages.success(req, 'Purchase successful.')
-        return redirect('order_success')
+            return redirect('order_success')
     return redirect('eazy_login')
 
 

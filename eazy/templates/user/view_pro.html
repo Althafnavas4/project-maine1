@@ -83,6 +83,8 @@
         <p><strong>Price:</strong> ${{ data.price }}</p>
         <p><strong>Offer Price:</strong> ${{ data.offer_price }}</p>
         <p><strong>Description:</strong> {{ data.dis }}</p>
+        <option value="{{ size.size }}">{{ size.size }}</option>
+
         <img src="{{ data.img.url }}" alt="{{ data.name }}">
 
         <form method="POST" action="../add_to_cart/{{data.pk}}">
