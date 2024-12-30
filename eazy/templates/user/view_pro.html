@@ -87,7 +87,7 @@
 
         <img src="{{ data.img.url }}" alt="{{ data.name }}">
 
-        <form method="POST" action="../add_to_cart/{{data.pk}}">
+        <form method="POST" id="productForm">
             {% csrf_token %}
             <div class="size-bar">
                 <label for="size"><strong>Select Size:</strong></label>
@@ -101,18 +101,21 @@
                     {% endif %}
                 </select>
             </div>
-
+        
             <div class="buttons">
-                <button type="submit" class="add-to-cart">Add to Cart</button>
+                <button type="button" class="add-to-cart" onclick="setFormAction('add_to_cart')">Add to Cart</button>
+                <button type="button" class="buy-now" onclick="setFormAction('user_buy1')">Buy Now</button>
             </div>
         </form>
-
-        <form method="POST" action="../user_buy1/{{data.pk}}">
-            {% csrf_token %}
-            <div class="buttons">
-                <button type="submit" class="buy-now">Buy Now</button>
-            </div>
-        </form>
+        
+        <script>
+            function setFormAction(actionType) {
+                const form = document.getElementById('productForm');
+                form.action = `../${actionType}/{{data.pk}}`;
+                form.submit();
+            }
+        </script>
+        
     </div>
 </body>
 </html>

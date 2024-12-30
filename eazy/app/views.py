@@ -102,30 +102,46 @@ def add_prod(req):
     else:
         return redirect(eazy_login)
     
-def edit(req,pid):
+def edit(req, pid):
     if 'eazy' in req.session:
-        if req.method=='POST':
-            prd_id=req.POST['prd_id']
-            prd_name=req.POST['prd_name']
-            prd_price=req.POST['prd_price']
-            ofr_price=req.POST['ofr_price']
-            dis=req.POST['dis']
-            sizes = req.POST.getlist('sizes')
-            
-            img=req.FILES.get('img')
+        if req.method == 'POST':
+            prd_id = req.POST['prd_id']
+            prd_name = req.POST['prd_name']
+            prd_price = req.POST['prd_price']
+            ofr_price = req.POST['ofr_price']
+            dis = req.POST['dis']
+            sizes = req.POST.getlist('sizes')  # Retrieve selected sizes
+            img = req.FILES.get('img')  # Get the new image if uploaded
+
+            # Fetch the product to edit
+            product = get_object_or_404(Product, pk=pid)
+
+            # Update product fields
+            product.pro_id = prd_id
+            product.name = prd_name
+            product.price = prd_price
+            product.offer_price = ofr_price
+            product.dis = dis
+
+            # Update image if a new one is uploaded
             if img:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=dis,sizes=sizes)
-                data=Product.objects.get(pk=pid)
-                data.img=img
-                data.save()
-            else:
-                Product.objects.filter(pk=pid).update(pro_id=prd_id,name=prd_name,price=prd_price,offer_price=ofr_price,dis=dis)
+                product.img = img
+
+            # Update sizes
+            product.sizes.clear()  # Clear existing sizes
+            for size in sizes:
+                size_obj, _ = Size.objects.get_or_create(size=size)
+                product.sizes.add(size_obj)
+
+            product.save()  # Save all changes
             return redirect(home_ad)
         else:
-            data=Product.objects.get(pk=pid)
-            return render(req,'shop/edit.html',{'product':data})
+            all_sizes = Size.objects.all()  # Fetch all available sizes
+            product = get_object_or_404(Product, pk=pid)  # Fetch the product to edit
+            return render(req, 'shop/edit.html', {'product': product, 'all_sizes': all_sizes})
     else:
         return redirect(eazy_login)
+
 
 def delete(req,pid):
     data=Product.objects.get(pk=pid)
@@ -213,35 +229,27 @@ def delete_cart(request, id):
     else:
         return redirect('eazy_login')
 
-def user_buy(request, id):
-    if 'user' in request.session:
-        cart_item = get_object_or_404(Cart, pk=id)
-        user = request.user
-        product = cart_item.product
-        size = cart_item.size
-        price = product.offer_price
+def user_buy(req,id):
+    user=User.objects.get(username=req.session['user'])
+    cart=Cart.objects.get(pk=id)
+    product=cart.product
+    price=cart.product.offer_price
+    size_name = req.POST.get('size')  # Get the selected size as a string
+    size = get_object_or_404(Size, size=size_name)
+    buy=Buy.objects.create(user=user,product=product,price=price,size=size)
+    buy.save()
+    return redirect(view_cart)
 
-        # Create a purchase record
-        Buy.objects.create(user=user, product=product, size=size, price=price)
-        cart_item.delete()  # Remove the item from the cart after purchase
-        messages.success(request, 'Purchase successful!')
-        return redirect('view_cart')
-    else:
-        return redirect('eazy_login')
-def user_buy1(req, pid):
-    if 'user' in req.session:
-         if req.method == 'POST':
-            product = get_object_or_404(Product, pk=pid)
-            size_name = req.POST.get('size')  # Get the selected size as a string
-            size = get_object_or_404(Size, size=size_name)  # Fetch Size by its name
-            user = User.objects.get(username=req.session['user'])
 
-            # Create a new cart item with the selected size
-            Cart.objects.create(user=user, product=product, size=size)
-
-            messages.success(req, 'Purchase successful.')
-            return redirect('order_success')
-    return redirect('eazy_login')
+def user_buy1(req,pid):
+     user=User.objects.get(username=req.session['user'])
+     product=Product.objects.get(pk=pid)
+     size_name = req.POST.get('size')  # Get the selected size as a string
+     size = get_object_or_404(Size, size=size_name)
+     price=product.offer_price
+     buy=Buy.objects.create(user=user,product=product,price=price,size=size)
+     buy.save()
+     return redirect(order_success)
 
 
 

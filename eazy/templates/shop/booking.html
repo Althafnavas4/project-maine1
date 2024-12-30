@@ -3,26 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <title>Admin Orders Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
 </head>
 <body>
-    <div class="container">
-        <div class="row">
-            {% for i in buy %}
-            <div class="'col-lg-12">
-                <img src="{{i.product.img.url}}" alt="" style="width: 300px; height: 400px;object-fit: contain;">
-                {{i.product.name}}
-                {{i.price}}
-                {{i.data}}
-                {{i.user.first_name}}
-            </div>
-            {% endfor %}
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Admin Orders Page</h1>
+
+        <!-- Search Bar -->
+        <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by customer name...">
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Customer Name</th>
+                        <th scope="col">Product</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Image</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable">
+                    {% for i in buy %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ i.customer_name }}</td>
+                        <td>{{ i.product.name }}</td>
+                        <td>${{ i.product.offer_price }}</td>
+                        <td>{{ i.size }}</td>
+                        <td>
+                            <img src="{{ i.product.img.url }}" alt="{{ i.product.name }}" class="img-thumbnail" style="height: 100px; width: auto;">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTable tr');
+            rows.forEach(row => {
+                const name = row.children[1].textContent.toLowerCase();
+                row.style.display = name.includes(searchValue) ? '' : 'none';
+            });
+        });
+    </script>
 </body>
 </html>
