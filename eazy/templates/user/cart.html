@@ -140,7 +140,7 @@
                     {% csrf_token %}
                     <button type="submit">Remove</button>
                 </form>
-                <form method="POST" action="{% url 'user_buy' item.id %}">
+                <form method="POST" action="user_buy/{{item.cid}}">
                     {% csrf_token %}
                     <button type="submit" class="buy-btn">Buy Now</button>
                 </form>

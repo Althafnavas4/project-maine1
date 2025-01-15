@@ -229,21 +229,21 @@ def delete_cart(request, id):
     else:
         return redirect('eazy_login')
 
-def user_buy(req,id):
+def user_buy(req,pid):
     user=User.objects.get(username=req.session['user'])
-    cart=Cart.objects.get(pk=id)
-    product=cart.product
-    price=cart.product.offer_price
+    cart=Cart.objects.get(pk=pid)
     size_name = req.POST.get('size')  # Get the selected size as a string
     size = get_object_or_404(Size, size=size_name)
+    product=cart.product
+    price=cart.product.ofr_price
     buy=Buy.objects.create(user=user,product=product,price=price,size=size)
     buy.save()
     return redirect(view_cart)
 
 
-def user_buy1(req,pid):
+def user_buy1(req,cid):
      user=User.objects.get(username=req.session['user'])
-     product=Product.objects.get(pk=pid)
+     product=Product.objects.get(pk=cid)
      size_name = req.POST.get('size')  # Get the selected size as a string
      size = get_object_or_404(Size, size=size_name)
      price=product.offer_price
