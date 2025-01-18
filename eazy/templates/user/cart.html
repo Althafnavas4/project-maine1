@@ -140,10 +140,12 @@
                     {% csrf_token %}
                     <button type="submit">Remove</button>
                 </form>
-                <form method="POST" action="user_buy/{{item.cid}}">
+                <form method="POST" action="{% url 'user_buy' item.id %}">
                     {% csrf_token %}
+                    <input type="hidden" name="size" value="{{ item.size }}">
                     <button type="submit" class="buy-btn">Buy Now</button>
                 </form>
+                
             </div>
         </div>
     {% endfor %}
