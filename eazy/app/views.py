@@ -17,6 +17,8 @@ from django.shortcuts import render
 from .models import Buy, Order
 
 
+from django.utils import timezone
+
 
 
 
@@ -264,10 +266,7 @@ def user_buy1(req,pid):
 
                                             
                                             
-from .models import Buy
-from django.utils import timezone
 
-from .models import Order
 
 def user_booking(req):
     user = User.objects.get(username=req.session['user'])

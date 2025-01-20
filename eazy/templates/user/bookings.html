@@ -85,16 +85,18 @@
     <div class="container mt-4">
         <div class="row">
             {% for order in buy %}
-            
-            <div class="col-lg-4 col-md-6">
+            <div class="col-lg-4 col-md-6 mb-4">
                 <div class="order-card">
+                    <!-- Product Image -->
                     <img src="{{ order.product.img.url }}" alt="{{ order.product.name }}" class="img-fluid" style="height: 300px; object-fit: contain;">
                     <h4>{{ order.product.name }}</h4>
+
+                    <!-- Order Details -->
                     <p><strong>Price:</strong> ${{ order.price }}</p>
                     <p><strong>Size:</strong> {{ order.size }}</p>
-                    <p class="order-info"><strong>Order ID:</strong> {{ order.order_id }}</p>
-                    <p class="order-info"><strong>Status:</strong> {{ order.status }}</p>
-                    <p class="order-info"><strong>Estimated Delivery:</strong> {{ order.estimated_delivery }}</p>
+                    <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                    <p><strong>Status:</strong> {{ order.status }}</p>
+                    <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery }}</p>
                 </div>
             </div>
             {% endfor %}

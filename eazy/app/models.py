@@ -40,15 +40,19 @@ class Buy(models.Model):
 
 from django.db import models
 
+from django.db import models
+
 class Order(models.Model):
     customer_name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=15)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # Allows null values
     email = models.EmailField()
-    address = models.TextField()
+    address = models.TextField(blank=True, null=True)  # Allows null values
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Order by {self.customer_name} on {self.created_at}"
+
+
 
 
 
