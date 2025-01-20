@@ -13,7 +13,8 @@ from django.contrib.auth.forms import AuthenticationForm
 
 from .forms import LoginForm, CustomPasswordResetForm
 
-
+from django.shortcuts import render
+from .models import Buy, Order
 
 
 
@@ -151,9 +152,15 @@ def delete(req,pid):
     data.delete()
     return redirect(home_ad)
 
-def booking (req):
-    buy=Buy.objects.all()[::-1] 
-    return render (req,'shop/booking.html',{'buy':buy})
+
+
+def booking(req):
+    buys = Buy.objects.all().order_by('-date')
+    orders = Order.objects.all().order_by('-created_at')
+    combined_data = zip(buys, orders)  # Pair the Buy and Order objects
+    return render(req, 'shop/booking.html', {'combined_data': combined_data})
+
+
 
 
     #------------------------user--------------------------------
@@ -242,25 +249,44 @@ def user_buy(req, pid):
 
 
 
-def user_buy1(req,cid):
+def user_buy1(req,pid):
      user=User.objects.get(username=req.session['user'])
-     product=Product.objects.get(pk=cid)
+     product=Product.objects.get(pk=pid)
      size_name = req.POST.get('size')  # Get the selected size as a string
      size = get_object_or_404(Size, size=size_name)
      price=product.offer_price
      buy=Buy.objects.create(user=user,product=product,price=price,size=size)
      buy.save()
-     return redirect(order_success)
+     return redirect(order_page)
 
 
 
 
                                             
                                             
+from .models import Buy
+from django.utils import timezone
+
+from .models import Order
+
 def user_booking(req):
-    user=User.objects.get(username=req.session['user'])
-    buy=Buy.objects.filter(user=user)[::-1]
-    return render(req,'user/bookings.html',{'buy':buy})
+    user = User.objects.get(username=req.session['user'])
+    buy = Buy.objects.filter(user=user).order_by('-date')
+    orders = Order.objects.all().order_by('-created_at')
+
+    enriched_buy = []
+    for order in buy:
+        enriched_buy.append({
+            'product': order.product,
+            'price': order.price,
+            'size': order.size,
+            'order_id': order.id,
+            'status': 'Pending',
+            'estimated_delivery': order.date + timezone.timedelta(days=5),
+        })
+
+    return render(req, 'user/bookings.html', {'buy': enriched_buy, 'orders': orders})
+
 
 def userprd(req):
     if 'user' in req.session:
@@ -269,6 +295,20 @@ def userprd(req):
     else:
         return redirect(user_home)
     
+from .forms import OrderForm
+
+def order_page(request):
+    if 'user' in request.session:
+        if request.method == "POST":
+            form = OrderForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect(order_success)  # Redirect to a success page
+        else:
+            form = OrderForm()
+        return render(request, 'user/order.html', {'form': form})
+    else:
+        return redirect(eazy_login)
 
 
 

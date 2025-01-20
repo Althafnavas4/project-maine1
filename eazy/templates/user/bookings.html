@@ -71,7 +71,10 @@
             margin: 0;
         }
 
-        
+        .order-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -81,19 +84,22 @@
 
     <div class="container mt-4">
         <div class="row">
-            {% for i in buy %}
+            {% for order in buy %}
+            
             <div class="col-lg-4 col-md-6">
                 <div class="order-card">
-                    <img src="{{ i.product.img.url }}" alt="{{ i.product.name }}" class="img-fluid" style="height: 300px; object-fit: contain;">
-                    <h4>{{ i.product.name }}</h4>
-                    <p><strong>Price:</strong> ${{ i.product.offer_price }}</p>
-                    <p><strong>Size:</strong> {{ i.size }}</p>
+                    <img src="{{ order.product.img.url }}" alt="{{ order.product.name }}" class="img-fluid" style="height: 300px; object-fit: contain;">
+                    <h4>{{ order.product.name }}</h4>
+                    <p><strong>Price:</strong> ${{ order.price }}</p>
+                    <p><strong>Size:</strong> {{ order.size }}</p>
+                    <p class="order-info"><strong>Order ID:</strong> {{ order.order_id }}</p>
+                    <p class="order-info"><strong>Status:</strong> {{ order.status }}</p>
+                    <p class="order-info"><strong>Estimated Delivery:</strong> {{ order.estimated_delivery }}</p>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-    
 
     <footer>
         <p>&copy; 2024 Footwear Store. All rights reserved.</p>
