@@ -247,7 +247,7 @@ def user_buy(req, pid):
     price = cart.product.offer_price
     buy = Buy.objects.create(user=user, product=product, price=price, size=size)
     buy.save()
-    return redirect(order_success)
+    return redirect(order_page)
 
 
 
