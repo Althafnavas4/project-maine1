@@ -85,19 +85,19 @@
             font-size: 1.5rem;
         }
 
-        .btn-view-details {
-            display: inline-block;
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            margin-top: 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
+        /* Stock Badge */
+        .stock-message {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 10px;
         }
 
-        .btn-view-details:hover {
-            background-color: #0056b3;
+        .stock-message.out-of-stock {
+            color: red;
+        }
+
+        .stock-message.in-stock {
+            color: green;
         }
 
         /* Footer */
@@ -144,6 +144,8 @@
     </nav>
 
     <div class="container mt-4">
+        <h2 class="text-center mb-4">Welcome to EAZY Shopping</h2>
+        <p class="text-center text-muted">Browse and shop the latest items, and enjoy dynamic stock updates.</p>
         <div class="row">
             {% for product in data %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
@@ -155,6 +157,11 @@
                             <p class="card-text">{{product.dis}}</p>
                             <p class="card-text"><s>${{product.price}}</s></p>
                             <h4 class="card-title">${{product.offer_price}}</h4>
+                            {% if product.is_out_of_stock %}
+                                <p class="stock-message out-of-stock">Out of Stock</p>
+                            {% else %}
+                                <p class="stock-message in-stock">In Stock: {{ product.quantity }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </a>

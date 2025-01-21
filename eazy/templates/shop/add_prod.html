@@ -81,12 +81,18 @@
             <label for="img">Image</label>
             <input type="file" name="img" required>
 
+
+            <label for="quantity">Quantity</label>
+            <input type="number" name="quantity" placeholder="Quantity" required>
+
+
             <label for="sizes">Select Sizes</label>
             <select name="sizes" multiple required>
                 {% for size in all_sizes %}
                     <option value="{{ size.size }}">{{ size.size }}</option>
                 {% endfor %}
             </select>
+            
 
             <button type="submit">Add Product</button>
         </form>

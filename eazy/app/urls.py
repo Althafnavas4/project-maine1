@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import  CustomPasswordResetView, CustomPasswordResetDoneView
+
 urlpatterns=[
     path('',views.eazy_login),
     path('eazy_logout',views.eazy_logout),
@@ -11,10 +11,7 @@ urlpatterns=[
     path('add_prod',views.add_prod),
     path('edit/<pid>',views.edit),
     path('delete/<pid>',views.delete),
-    path('password_reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     
-    path('password_reset_done/', CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
-
 
 
 

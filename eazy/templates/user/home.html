@@ -256,6 +256,11 @@
                 <p>{{ product.dis }}</p>
                 <s><p>₹{{ product.price }}</p></s>
                 <h3>₹{{ product.ofr_price }}</h3>
+                {% if product.is_out_of_stock %}
+                    <p style="color: red;">Out of Stock</p>
+                {% else %}
+                    <p>In Stock: {{ product.quantity }}</p>
+                {% endif %}
                 <a href="#" class="btn-view-details">View Details</a>
             </div>
             {% endfor %}

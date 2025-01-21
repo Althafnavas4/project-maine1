@@ -66,12 +66,8 @@ def eazy_logout(req):
     logout(req)
     return redirect(eazy_login)
 
-class CustomPasswordResetView(PasswordResetView):
-    template_name = 'password_reset.html'
-    form_class = CustomPasswordResetForm
 
-class CustomPasswordResetDoneView(PasswordResetDoneView):
-    template_name = 'password_reset_done.html'
+
 
 def add_prod(req):
     if 'eazy' in req.session:
@@ -83,6 +79,7 @@ def add_prod(req):
             dis = req.POST['dis']
             img = req.FILES['img']
             sizes = req.POST.getlist('sizes')
+            quantity = int(req.POST['quantity'])  # Fetch quantity from form
 
             product = Product.objects.create(
                 pro_id=prd_id,
@@ -90,10 +87,10 @@ def add_prod(req):
                 price=prd_price,
                 offer_price=ofr_price,
                 img=img,
-                dis=dis
+                dis=dis,
+                quantity=quantity  # Add quantity to the product
             )
 
-            # Associate selected sizes
             for size in sizes:
                 size_obj, created = Size.objects.get_or_create(size=size)
                 product.sizes.add(size_obj)
@@ -104,7 +101,7 @@ def add_prod(req):
             return render(req, 'shop/add_prod.html', {'all_sizes': all_sizes})
     else:
         return redirect(eazy_login)
-    
+
 def edit(req, pid):
     if 'eazy' in req.session:
         if req.method == 'POST':
@@ -115,6 +112,7 @@ def edit(req, pid):
             dis = req.POST['dis']
             sizes = req.POST.getlist('sizes')  # Retrieve selected sizes
             img = req.FILES.get('img')  # Get the new image if uploaded
+            quantity = req.POST['quantity']  # Retrieve quantity
 
             # Fetch the product to edit
             product = get_object_or_404(Product, pk=pid)
@@ -125,6 +123,7 @@ def edit(req, pid):
             product.price = prd_price
             product.offer_price = ofr_price
             product.dis = dis
+            product.quantity = quantity  # Update quantity
 
             # Update image if a new one is uploaded
             if img:
@@ -239,27 +238,58 @@ def delete_cart(request, id):
         return redirect('eazy_login')
 
 def user_buy(req, pid):
+    # Get the user and product details
     user = User.objects.get(username=req.session['user'])
-    cart = Cart.objects.get(pk=pid)
-    size_name = req.POST.get('size')
+    product = Product.objects.get(pk=pid)
+    size_name = req.POST.get('size')  # Get the selected size
     size = get_object_or_404(Size, size=size_name)
-    product = cart.product
-    price = cart.product.offer_price
-    buy = Buy.objects.create(user=user, product=product, price=price, size=size)
-    buy.save()
-    return redirect(order_page)
+
+    # Check if the product is in stock
+    if product.quantity > 0:
+        # Deduct 1 from the stock
+        product.quantity -= 1
+        product.save()
+
+        # Proceed to create the purchase record
+        price = product.offer_price
+        buy = Buy.objects.create(user=user, product=product, price=price, size=size)
+        buy.save()
+
+        messages.success(req, 'Product purchased successfully!')
+        return redirect(order_page)
+    else:
+        # Handle the out-of-stock case
+        messages.error(req, 'Sorry, this product is out of stock.')
+        return redirect(view_cart)
 
 
 
-def user_buy1(req,pid):
-     user=User.objects.get(username=req.session['user'])
-     product=Product.objects.get(pk=pid)
-     size_name = req.POST.get('size')  # Get the selected size as a string
-     size = get_object_or_404(Size, size=size_name)
-     price=product.offer_price
-     buy=Buy.objects.create(user=user,product=product,price=price,size=size)
-     buy.save()
-     return redirect(order_page)
+
+def user_buy1(req, pid):
+    # Get the user and product details
+    user = User.objects.get(username=req.session['user'])
+    product = Product.objects.get(pk=pid)
+    size_name = req.POST.get('size')  # Get the selected size
+    size = get_object_or_404(Size, size=size_name)
+
+    # Check if the product is in stock
+    if product.quantity > 0:
+        # Deduct 1 from the stock
+        product.quantity -= 1
+        product.save()
+
+        # Proceed to create the purchase record
+        price = product.offer_price
+        buy = Buy.objects.create(user=user, product=product, price=price, size=size)
+        buy.save()
+
+        messages.success(req, 'Product purchased successfully!')
+        return redirect(order_page)
+    else:
+        # Handle the out-of-stock case
+        messages.error(req, 'Sorry, this product is out of stock.')
+        return redirect(view_cart)
+
 
 
 

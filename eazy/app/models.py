@@ -10,6 +10,7 @@ class Size(models.Model):
 
 # Product model
 class Product(models.Model):
+
     pro_id = models.TextField()
     name = models.TextField()
     price = models.IntegerField()
@@ -17,10 +18,15 @@ class Product(models.Model):
     img = models.FileField()
     rating = models.TextField()
     dis = models.TextField()
-    sizes = models.ManyToManyField(Size, related_name='Sizes')  # Add sizes field
+    sizes = models.ManyToManyField(Size, related_name='Sizes')
+    quantity = models.PositiveIntegerField(default=0)  # New field for stock quantity
+
+    def is_out_of_stock(self):
+        return self.quantity <= 0
 
     def __str__(self):
         return self.name
+
 
 # Cart model
 class Cart(models.Model):
