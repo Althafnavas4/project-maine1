@@ -12,57 +12,73 @@
             padding: 20px;
             color: #333;
         }
+
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
+
         h2 {
             text-align: center;
             color: #007bff;
             margin-bottom: 30px;
         }
+
         .cart-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 20px;
             border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s ease;
         }
+
+        .cart-item:hover {
+            background-color: #f1f1f1;
+        }
+
         .cart-item:last-child {
             border-bottom: none;
         }
+
         .cart-item img {
-            max-width: 100px;
+            max-width: 120px;
             height: auto;
             border-radius: 8px;
             margin-right: 20px;
         }
+
         .cart-item-details {
             display: flex;
             align-items: center;
             flex: 1;
         }
+
         .cart-item-info {
             margin-left: 20px;
         }
+
         .cart-item-info h4 {
             margin: 0;
             font-size: 18px;
             color: #333;
         }
+
         .cart-item-info p {
             margin: 5px 0;
             font-size: 14px;
             color: #666;
         }
+
         .cart-item-actions {
             display: flex;
             gap: 10px;
         }
+
         .cart-item-actions button {
             background-color: #dc3545;
             color: white;
@@ -73,9 +89,11 @@
             font-size: 14px;
             transition: background-color 0.3s;
         }
+
         .cart-item-actions button:hover {
             background-color: #c82333;
         }
+
         .buy-btn {
             background-color: #28a745;
             color: white;
@@ -86,9 +104,11 @@
             font-size: 14px;
             transition: background-color 0.3s;
         }
+
         .buy-btn:hover {
             background-color: #218838;
         }
+
         .total {
             text-align: right;
             font-size: 22px;
@@ -96,6 +116,7 @@
             font-weight: bold;
             color: #28a745;
         }
+
         .checkout-btn {
             display: inline-block;
             background-color: #007bff;
@@ -108,14 +129,86 @@
             text-align: center;
             transition: background-color 0.3s;
         }
+
         .checkout-btn:hover {
             background-color: #0056b3;
         }
+
         .empty-cart {
             text-align: center;
             font-size: 20px;
             color: #666;
             margin-top: 50px;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .cart-item img {
+                max-width: 80px;
+            }
+
+            .cart-item-info h4 {
+                font-size: 16px;
+            }
+
+            .cart-item-info p {
+                font-size: 12px;
+            }
+
+            .cart-item-actions button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .total {
+                font-size: 20px;
+            }
+
+            .checkout-btn {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cart-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .cart-item-details {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .cart-item-info h4 {
+                font-size: 14px;
+            }
+
+            .cart-item-info p {
+                font-size: 10px;
+            }
+
+            .cart-item-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .cart-item-actions button {
+                padding: 6px 10px;
+                font-size: 12px;
+                width: 48%;
+            }
+
+            .total {
+                font-size: 18px;
+                margin-top: 15px;
+            }
+
+            .checkout-btn {
+                width: 100%;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -132,7 +225,6 @@
                     <h4>{{ item.product.name }}</h4>
                     <p><strong>Price:</strong> ${{ item.product.offer_price }}</p>
                     <p><strong>Size:</strong> {{ item.size }}</p>
-                    
                 </div>
             </div>
             <div class="cart-item-actions">
@@ -145,19 +237,18 @@
                     <input type="hidden" name="size" value="{{ item.size }}">
                     <button type="submit" class="buy-btn">Buy Now</button>
                 </form>
-                
             </div>
         </div>
-    {% endfor %}
-    
+        {% endfor %}
+        
+        <div class="total">
+            Total: ${{ total_price }}
+        </div>
 
-            <div class="total">
-                Total: ${{ total_price }}
-            </div>
-
-           
+        
+        
         {% else %}
-            <p class="empty-cart">Your cart is empty.</p>
+        <p class="empty-cart">Your cart is empty.</p>
         {% endif %}
     </div>
 </body>

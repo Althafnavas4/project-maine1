@@ -5,59 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ data.name }}</title>
     <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f4f9;
             margin: 0;
             padding: 20px;
             color: #333;
+            line-height: 1.6;
         }
+
+        /* Container */
         .container {
             background-color: #fff;
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
+
+        /* Heading */
         h2 {
             color: #007bff;
+            font-size: 28px;
             margin-bottom: 20px;
+            text-transform: uppercase;
         }
+
+        /* Image */
         img {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
+            border-radius: 10px;
             margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
         }
+        img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Paragraphs */
         p {
             font-size: 18px;
-            line-height: 1.5;
+            margin: 10px 0;
         }
+        .price {
+            font-weight: bold;
+            font-size: 20px;
+            color: #333;
+        }
+        .offer-price {
+            color: #e74c3c;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Stock Status */
+        .out-of-stock {
+            color: #e74c3c;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .in-stock {
+            color: #28a745;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Form */
         .size-bar {
             margin: 20px 0;
+            text-align: left;
+            display: inline-block;
+            width: 100%;
+        }
+        .size-bar label {
+            font-weight: bold;
+            font-size: 18px;
+            display: block;
+            margin-bottom: 8px;
         }
         .size-select {
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
             border-radius: 5px;
             border: 1px solid #ccc;
-            width: 200px;
-            margin: 10px auto;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
         }
+
+        /* Buttons */
         .buttons {
-            margin-top: 20px;
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
         }
         .buttons button {
-            padding: 12px 24px;
-            margin: 10px;
+            padding: 15px 40px;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 50px;
+            font-size: 18px;
             color: white;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
         }
         .add-to-cart {
             background-color: #ffc107;
@@ -65,26 +128,75 @@
         }
         .add-to-cart:hover {
             background-color: #e0a800;
+            transform: scale(1.05);
         }
         .buy-now {
             background-color: #28a745;
         }
         .buy-now:hover {
             background-color: #218838;
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h2 {
+                font-size: 24px;
+            }
+            p {
+                font-size: 16px;
+            }
+            .buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .buttons button {
+                width: 100%;
+                max-width: 300px;
+            }
+            img {
+                margin: 15px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 20px;
+            }
+            .price, .offer-price {
+                font-size: 18px;
+            }
+            p {
+                font-size: 14px;
+            }
+            .buttons button {
+                font-size: 16px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>{{ data.name }}</h2>
-        <p><strong>Price:</strong> ${{ data.price }}</p>
-        <p><strong>Offer Price:</strong> ${{ data.offer_price }}</p>
+        <p class="price"><strong>Price:</strong> ${{ data.price }}</p>
+        <p class="offer-price"><strong>Offer Price:</strong> ${{ data.offer_price }}</p>
         <p><strong>Description:</strong> {{ data.dis }}</p>
 
         {% if data.is_out_of_stock %}
-            <p style="color: red;">Out of Stock</p>
+            <p class="out-of-stock">Out of Stock</p>
         {% else %}
-            <p>In Stock: {{ data.quantity }}</p>
+            <p class="in-stock">In Stock: {{ data.quantity }}</p>
         {% endif %}
 
         <img src="{{ data.img.url }}" alt="{{ data.name }}">
@@ -109,15 +221,18 @@
                 <button type="button" class="buy-now" onclick="setFormAction('user_buy1')">Buy Now</button>
             </div>
         </form>
-        
-        <script>
-            function setFormAction(actionType) {
-                const form = document.getElementById('productForm');
-                form.action = `../${actionType}/{{data.pk}}`;
-                form.submit();
-            }
-        </script>
-        
     </div>
+
+    <div class="footer">
+        &copy; {{ current_year }} Your Store. All rights reserved.
+    </div>
+
+    <script>
+        function setFormAction(actionType) {
+            const form = document.getElementById('productForm');
+            form.action = `../${actionType}/{{data.pk}}`;
+            form.submit();
+        }
+    </script>
 </body>
 </html>
