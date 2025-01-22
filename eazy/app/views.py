@@ -237,10 +237,13 @@ def delete_cart(request, id):
     else:
         return redirect('eazy_login')
 
+
+
 def user_buy(req, pid):
-    # Get the user and product details
+    # Get the user and cart details
     user = User.objects.get(username=req.session['user'])
-    product = Product.objects.get(pk=pid)
+    cart = Cart.objects.get(pk=pid)
+    product = cart.product
     size_name = req.POST.get('size')  # Get the selected size
     size = get_object_or_404(Size, size=size_name)
 
@@ -255,12 +258,13 @@ def user_buy(req, pid):
         buy = Buy.objects.create(user=user, product=product, price=price, size=size)
         buy.save()
 
+        # Provide success message and redirect
         messages.success(req, 'Product purchased successfully!')
-        return redirect(order_page)
+        return redirect('order_page')  # Make sure to replace with your actual order page name or URL
     else:
-        # Handle the out-of-stock case
+        # Handle out-of-stock case
         messages.error(req, 'Sorry, this product is out of stock.')
-        return redirect(view_cart)
+        return redirect('view_cart')  # Redirect back to the cart pag
 
 
 
