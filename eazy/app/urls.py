@@ -45,5 +45,5 @@ urlpatterns=[
     path('userprd',views.userprd),
     path('order/', views.order_page, name='order_page'),
     path('order_success/',views.order_success, name='order_success'),
-  
+    
 ]

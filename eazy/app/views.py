@@ -78,7 +78,117 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 
 
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.utils.crypto import get_random_string
 
+# Mock function to simulate email sending for verification
+from django.urls import reverse_lazy
+from django.contrib.auth.views import (
+    PasswordResetView, 
+    PasswordResetDoneView, 
+    PasswordResetConfirmView, 
+    PasswordResetCompleteView
+)
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'password_reset.html'
+    email_template_name = 'password_reset_email.html'
+    subject_template_name = 'password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+class CustomPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'password_reset_done.html'
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'password_reset_complete.html'
+
+
+
+
+# from django.contrib.auth.models import User
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from django.shortcuts import render, redirect
+# from django.contrib import messages
+# from django.utils.crypto import get_random_string
+
+# # Mock function to simulate email sending for verification
+# def send_verification_email(email, token):
+#     subject = "Email Verification"
+#     message = f"Click the link to verify your account: http://yourdomain.com/verify/{token}/"
+#     from_email = settings.EMAIL_HOST_USER
+#     recipient_list = [email]
+#     send_mail(subject, message, from_email, recipient_list)
+
+# def register(req):
+#     if req.method == 'POST':
+#         name = req.POST['name']
+#         email = req.POST['email']
+#         password = req.POST['password']
+
+#         # Password validation: at least 8 characters
+#         if len(password) < 8:
+#             messages.warning(req, 'Password must be at least 8 characters long.')
+#             return redirect(register)
+
+#         # Check if user already exists
+#         if User.objects.filter(email=email).exists():
+#             messages.warning(req, 'User already exists.')
+#             return redirect(register)
+
+#         try:
+#             # Create user with inactive status
+#             user = User.objects.create_user(
+#                 first_name=name,
+#                 email=email,
+#                 password=password,
+#                 username=email,
+#                 is_active=False  # User is inactive until verified
+#             )
+#             user.save()
+
+#             # Generate verification token
+#             token = get_random_string(50)
+#             # Save the token to the user profile or database (implement this)
+#             # For example, user.profile.verification_token = token
+
+#             # Send verification email
+#             send_verification_email(email, token)
+
+#             messages.success(req, 'Account created. Check your email for verification link.')
+#             return redirect('eazy_login')
+#         except Exception as e:
+#             messages.error(req, f'Error: {str(e)}')
+#             return redirect(register)
+#     else:
+#         return render(req, 'user/register.html')
+
+
+
+def register(req):
+    if req.method=='POST':
+        name=req.POST['name']
+        email=req.POST['email']
+        password=req.POST['password']
+        # send_mail('user registration','eshop account created', settings.EMAIL_HOST_USER, [email])
+        try:
+           
+            data=User.objects.create_user(first_name=name,email=email,password=password,username=email)
+            data.save()
+            return redirect(eazy_login)
+        except:
+            messages.warning(req,'User already exists.')
+            return redirect(register)
+    else:
+        return render(req,'user/register.html')
 
 
 
@@ -198,22 +308,7 @@ def booking(req):
 
     #------------------------user--------------------------------
 
-def register(req):
-    if req.method=='POST':
-        name=req.POST['name']
-        email=req.POST['email']
-        password=req.POST['password']
-        # send_mail('user registration','eshop account created', settings.EMAIL_HOST_USER, [email])
-        try:
-           
-            data=User.objects.create_user(first_name=name,email=email,password=password,username=email)
-            data.save()
-            return redirect(eazy_login)
-        except:
-            messages.warning(req,'User already exists.')
-            return redirect(register)
-    else:
-        return render(req,'user/register.html')
+
 
 def user_home(req):
     if 'user' in req.session:

@@ -139,5 +139,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'nalthaf13@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = '4123_password'  # Replace with your app password
+EMAIL_HOST_PASSWORD = 'qkxemdhpbcoszkbu'  # Replace with your app password
 DEFAULT_FROM_EMAIL = 'nalthaf13email@gmail.com'
