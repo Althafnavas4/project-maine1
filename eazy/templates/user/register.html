@@ -9,7 +9,7 @@
     <style>
         /* Background styling */
         .bodybg {
-            background-image: url("../static/eazy.jpg");
+            background-image: url("../static/ornate-floral-pattern-symbolizes-chinese-winter-celebration-generated-by-ai.jpg");
             background-size: cover;
             background-attachment: fixed;
             background-repeat: no-repeat;
@@ -17,147 +17,188 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
             padding: 15px;
-            color: #333;
         }
 
         /* Form container */
         .form-container {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(0, 0, 0, 0.7);
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 480px;
+            max-width: 400px;
+            text-align: center;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
+        h4 {
             color: #007bff;
             font-weight: bold;
-        }
-
-        .form-control {
             margin-bottom: 20px;
-            font-size: 16px;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            transition: border-color 0.3s ease-in-out;
         }
 
-        .form-control:focus {
+        .input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            background-color: #f8f9fa;
+        }
+
+        .input:focus {
             border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            background-color: #e9ecef;
         }
 
         .btn-dark {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             font-size: 18px;
-            border-radius: 8px;
-            background-color: #007bff;
+            border-radius: 5px;
+            background-color: #343a40;
             color: white;
             border: none;
-            transition: background-color 0.3s ease-in-out;
+            cursor: pointer;
         }
 
         .btn-dark:hover {
-            background-color: #0056b3;
+            background-color: #23272b;
         }
 
+        a {
+            display: inline-block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Alert styling */
         .alert {
             margin-top: 20px;
-            text-align: center;
         }
 
+        /* Responsive design for large screens */
+        @media (min-width: 992px) {
+            .form-container {
+                max-width: 450px;
+            }
+        }
+
+        /* Responsive design for tablets */
+        @media (max-width: 991px) and (min-width: 768px) {
+            .form-container {
+                max-width: 400px;
+                padding: 25px;
+            }
+            h4 {
+                font-size: 24px;
+            }
+            .input {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+
+        /* Responsive design for mobile devices */
+        @media (max-width: 767px) {
+            .form-container {
+                padding: 20px;
+            }
+            h4 {
+                font-size: 22px;
+            }
+            .input {
+                font-size: 14px;
+                padding: 10px;
+            }
+            .btn-dark {
+                font-size: 16px;
+                padding: 10px;
+            }
+        }
+
+        /* Responsive design for very small devices */
+        @media (max-width: 480px) {
+            h4 {
+                font-size: 20px;
+            }
+            .form-container {
+                padding: 15px;
+            }
+        }
+
+        /* Password visibility toggle icon */
         .password-toggle {
             position: relative;
         }
 
         .password-toggle .toggle-icon {
             position: absolute;
-            right: 15px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-        }
-
-        /* Responsive design adjustments */
-        @media (max-width: 767px) {
-            h2 {
-                font-size: 24px;
-            }
-
-            .form-container {
-                padding: 20px;
-            }
-
-            .btn-dark {
-                font-size: 16px;
-                padding: 12px;
-            }
         }
     </style>
 </head>
 <body class="bodybg">
     <div class="form-container">
-        <form action="" method="post" novalidate>
+        <form action="" method="post">
             {% csrf_token %}
-            <h2>Register</h2>
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" name="name" id="name" class="form-control" placeholder="Enter your name" required>
-                <div class="invalid-feedback">Please enter your name.</div>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" id="email" class="form-control" placeholder="Enter your email" required>
-                <div class="invalid-feedback">Please enter a valid email.</div>
-            </div>
-            <div class="mb-3 password-toggle">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" id="password" class="form-control" placeholder="Enter your password" minlength="8" required>
+            <h4>REGISTER</h4>
+            <label for="name">Name</label><br>
+            <input type="text" name="name" placeholder="Enter your name" class="input" required><br><br>
+
+            <label for="email">Email</label><br>
+            <input type="email" name="email" placeholder="Enter your email" class="input" required><br><br>
+
+            <label for="password">Password</label><br>
+            <div class="password-toggle">
+                <input type="password" name="password" placeholder="Enter your password" class="input" id="password" required><br><br>
                 <span class="toggle-icon" onclick="togglePassword()">👁️</span>
-                <div class="invalid-feedback">Password must be at least 8 characters long.</div>
             </div>
-            <div>
-                <input type="submit" value="Submit" class="btn btn-dark">
+
+            <label for="confirm_password">Confirm Password</label><br>
+            <div class="password-toggle">
+                <input type="password" name="confirm_password" placeholder="Confirm your password" class="input" id="confirm_password" required><br><br>
+                <span class="toggle-icon" onclick="toggleConfirmPassword()">👁️</span>
             </div>
+
+            <input type="submit" value="REGISTER" class="btn-dark">
+            <br>
+            <a href="{% url 'eazy_login' %}">Already have an account? Login</a>
+            <br>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
         </form>
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-        {% endif %}
     </div>
 
     <script>
-        // Password toggle functionality
+        // Toggle password visibility
         function togglePassword() {
             const passwordField = document.getElementById('password');
             const type = passwordField.type === 'password' ? 'text' : 'password';
             passwordField.type = type;
         }
 
-        // Bootstrap validation
-        (function () {
-            'use strict';
-            const forms = document.querySelectorAll('form');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', function (event) {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        })();
+        function toggleConfirmPassword() {
+            const confirmPasswordField = document.getElementById('confirm_password');
+            const type = confirmPasswordField.type === 'password' ? 'text' : 'password';
+            confirmPasswordField.type = type;
+        }
     </script>
 </body>
 </html>

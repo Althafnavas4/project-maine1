@@ -135,6 +135,19 @@
                 padding: 15px;
             }
         }
+
+        /* Password visibility toggle icon */
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle .toggle-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bodybg">
@@ -144,8 +157,13 @@
             <h4>LOGIN</h4>
             <label for="uname">Username</label><br>
             <input type="text" name="uname" placeholder="Username" class="input" required><br><br>
+
             <label for="passwd">Password</label><br>
-            <input type="password" name="passwd" placeholder="Password" class="input" required><br><br>
+            <div class="password-toggle">
+                <input type="password" name="passwd" placeholder="Password" class="input" id="passwd" required><br><br>
+                <span class="toggle-icon" onclick="togglePassword()">👁️</span>
+            </div>
+
             <input type="submit" value="LOGIN" class="btn-dark">
             <br>
             <a href="register">REGISTER</a>
@@ -161,6 +179,14 @@
             {% endif %}
         </form>
     </div>
+
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordField = document.getElementById('passwd');
+            const type = passwordField.type === 'password' ? 'text' : 'password';
+            passwordField.type = type;
+        }
+    </script>
 </body>
 </html>
-
