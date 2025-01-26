@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
-        /* General styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
             color: #333;
         }
 
@@ -22,52 +22,86 @@
             color: white;
             padding: 20px 0;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         header h1 {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin: 0;
             font-weight: bold;
         }
 
+        .container {
+            padding: 20px;
+        }
+
         .order-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
         }
 
         .order-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
         }
 
         .order-card img {
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border-radius: 10px;
             object-fit: cover;
             width: 100%;
-            height: 250px;
+            height: 180px;
+            margin-bottom: 15px;
         }
 
         .order-card h4 {
-            font-size: 1.5rem;
-            color: #007bff;
-            margin: 10px 0;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
             font-weight: bold;
+            color: #007bff;
         }
 
         .order-card p {
-            font-size: 1rem;
-            margin: 5px 0;
-            color: #555;
+            margin: 6px 0;
+            font-size: 0.95rem;
         }
 
-        .order-card p strong {
-            color: #333;
+        .btn-primary {
+            background-color: #28a745;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
         }
 
         footer {
@@ -75,78 +109,141 @@
             color: white;
             text-align: center;
             padding: 20px;
-            position: relative;
-            bottom: 0;
-            width: 100%;
-            font-size: 0.9rem;
             margin-top: 40px;
+            font-size: 0.9rem;
         }
 
-        footer p {
-            margin: 0;
+        .no-orders {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.5rem;
+            color: #666;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .order-card img {
-                height: 200px;
-            }
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 12px;
         }
 
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
-            .order-card h4 {
-                font-size: 1.3rem;
-            }
-            .order-card img {
-                height: 180px;
-            }
+        .modal-header {
+            border-bottom: 2px solid #ddd;
         }
 
-        @media (max-width: 576px) {
-            header h1 {
-                font-size: 1.5rem;
-                padding: 15px 0;
-            }
-            .order-card h4 {
-                font-size: 1.1rem;
-            }
-            .order-card img {
-                height: 150px;
-            }
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .alert-container {
+            margin-bottom: 20px;
+        }
+
+        .clear-all-btn {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .clear-all-btn form {
+            display: inline;
         }
     </style>
 </head>
+
 <body>
     <header>
         <h1>Your Orders</h1>
     </header>
 
     <div class="container mt-4">
+
+        <!-- Display Messages -->
+        <div class="alert-container">
+            {% if messages %}
+            <div>
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if buy %}
+        <!-- Clear All Orders Button -->
+        <div class="clear-all-btn">
+            <form method="POST" action="{% url 'clear_all_orders' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Clear All Orders</button>
+            </form>
+        </div>
+
         <div class="row">
             {% for order in buy %}
+            {% if order.status != 'Delivered' %}  <!-- Only display orders that are not delivered -->
             <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                 <div class="order-card">
-                    <!-- Product Image -->
                     <img src="{{ order.product.img.url }}" alt="{{ order.product.name }}" class="img-fluid">
-                    
-                    <!-- Order Details -->
                     <h4>{{ order.product.name }}</h4>
                     <p><strong>Price:</strong> ${{ order.price }}</p>
-                    <p><strong>Size:</strong> {{ order.size }}</p>
+                    <p><strong>Size:</strong> {{ order.size.size }}</p>
                     <p><strong>Order ID:</strong> {{ order.order_id }}</p>
                     <p><strong>Status:</strong> {{ order.status }}</p>
-                    <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery }}</p>
+                    <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|default:'N/A' }}</p>
+
+                    <!-- Trigger the modal -->
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderDetailsModal-{{ order.order_id }}">
+                        View More Details
+                    </button>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="orderDetailsModal-{{ order.order_id }}" tabindex="-1"
+                        aria-labelledby="orderDetailsModalLabel-{{ order.order_id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="orderDetailsModalLabel-{{ order.order_id }}">Order Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Product Name:</strong> {{ order.product.name }}</p>
+                                    <p><strong>Price:</strong> ${{ order.price }}</p>
+                                    <p><strong>Size:</strong> {{ order.size.size }}</p>
+                                    <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                                    <p><strong>Status:</strong> {{ order.status }}</p>
+                                    <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|default:'N/A' }}</p>
+                                    <p><strong>Shipping Address:</strong> {{ order.shipping_address|default:'No address provided' }}</p>
+                                    <p><strong>Email:</strong> {{ order.email|default:'No email provided' }}</p>
+                                    <p><strong>Phone No:</strong> {{ order.phone_number|default:'No phone number provided' }}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <form method="POST" action="{% url 'cancel_order' order.order_id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Cancel Order</button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endif %}
             {% endfor %}
         </div>
+        {% else %}
+        <div class="no-orders">
+            <p>You currently have no orders.</p>
+        </div>
+        {% endif %}
     </div>
 
     <footer>
         <p>&copy; 2024 Footwear Store. All rights reserved.</p>
     </footer>
+
 </body>
+
 </html>

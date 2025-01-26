@@ -36,11 +36,26 @@ class Cart(models.Model):
 
 # Buy model
 class Buy(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Shipped', 'Shipped'),
+        ('Delivered', 'Delivered'),
+        ('Canceled', 'Canceled'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.IntegerField()
     date = models.DateField(auto_now_add=True)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=50, 
+        choices=STATUS_CHOICES, 
+        default='Pending'
+    )  # New field for tracking delivery status
+
+    def __str__(self):
+        return f"{self.product.name} ({self.status})"
     
 
 
@@ -50,6 +65,7 @@ from django.db import models
 
 class Order(models.Model):
     customer_name = models.CharField(max_length=100)
+
     phone_number = models.CharField(max_length=15, blank=True, null=True)  # Allows null values
     email = models.EmailField()
     address = models.TextField(blank=True, null=True)  # Allows null values
@@ -63,21 +79,23 @@ class Order(models.Model):
 
 
 
+# models.py
 
-  
 from django.db import models
 from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE) 
+    name = models.CharField(max_length=100)# Linking the profile to the User
+    address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-
+    date_of_birth = models.DateField(blank=True, null=True)  # New field for date of birth
+    gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], blank=True, null=True)  # Gender field
+   
     def __str__(self):
         return self.user.username
 
+  
 
 
 

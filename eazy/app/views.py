@@ -277,11 +277,42 @@ def delete(req,pid):
 
 
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Buy, Order
+
 def booking(req):
+    if req.method == "POST":
+        # Process status updates from the admin page
+        for key, value in req.POST.items():
+            if key.startswith('status_'):  # Look for status fields
+                buy_id = key.split('_')[1]  # Extract the Buy ID from the key
+                try:
+                    buy = Buy.objects.get(id=buy_id)
+                    old_status = buy.status  # Capture the previous status
+                    if old_status != value:  # Only update if the status is different
+                        buy.status = value  # Update the status field
+                        buy.save()  # Save the changes
+                        messages.success(req, f"Order {buy_id} status updated from {old_status} to {value}.")
+                    else:
+                        messages.info(req, f"Order {buy_id} status is already {value}.")
+                except Buy.DoesNotExist:
+                    messages.error(req, f"Order {buy_id} not found.")
+        
+        return redirect('booking')  # Redirect to refresh the admin page
+
+    # Display all orders and buys
     buys = Buy.objects.all().order_by('-date')
     orders = Order.objects.all().order_by('-created_at')
-    combined_data = zip(buys, orders)  # Pair the Buy and Order objects
+
+    # Ensure the lists of buys and orders are aligned
+    # You can adjust this based on how you want to pair them together, e.g., via a foreign key relation
+    combined_data = zip(buys, orders)  # This is okay if the two lists align correctly
+
     return render(req, 'shop/booking.html', {'combined_data': combined_data})
+
+
+
 
 
 
@@ -415,7 +446,6 @@ def user_buy1(req, pid):
 def user_booking(req):
     user = User.objects.get(username=req.session['user'])
     buy = Buy.objects.filter(user=user).order_by('-date')
-    orders = Order.objects.all().order_by('-created_at')
 
     enriched_buy = []
     for order in buy:
@@ -423,12 +453,19 @@ def user_booking(req):
             'product': order.product,
             'price': order.price,
             'size': order.size,
-            'order_id': order.id,
-            'status': 'Pending',
+            'order_id': order.id,  # Ensure this is populated
+            'status': order.status,
             'estimated_delivery': order.date + timezone.timedelta(days=5),
+            'shipping_address': user.userprofile.address if hasattr(user, 'userprofile') and user.userprofile.address else 'No address provided',
+            'email': user.email if user.email else 'No email provided',
+            'phone_number': user.userprofile.phone_number if hasattr(user, 'userprofile') and user.userprofile.phone_number else 'No phone number provided',
         })
 
-    return render(req, 'user/bookings.html', {'buy': enriched_buy, 'orders': orders})
+    return render(req, 'user/bookings.html', {'buy': enriched_buy})
+
+
+
+
 
 
 def userprd(req):
@@ -459,6 +496,116 @@ def order_page(request):
 
 
 
+
 def order_success(request):
     return render(request, 'user/order_success.html')
+
+
+
+def user_orders_view(request):
+    # Get all orders related to the user
+    orders = Order.objects.all()  # Or you can filter it by the logged-in user: Order.objects.filter(user=request.user)
+    
+    # Get all the associated Buy data
+    buys = Buy.objects.all()  # Or filter by user if needed: Buy.objects.filter(user=request.user)
+
+    # Combine the data into a list of dictionaries or tuples
+    combined_data = []
+    for order in orders:
+        # Get the corresponding buy instance
+        buy = buys.filter(user=order.user, product=order.product).first()  # Ensure you filter by matching buy
+
+        # Add combined data
+        if buy:
+            combined_data.append({
+                'order': order,
+                'buy': buy
+            })
+
+    return render(request, 'orders.html', {'combined_data': combined_data})
+
+
+
+
+
+
+
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import UserProfileForm
+from .models import UserProfile
+
+def user_profile(request):
+    user = request.user  # Get the logged-in user
+    try:
+        profile = user.userprofile
+    except UserProfile.DoesNotExist:
+        profile = UserProfile.objects.create(user=user)  # Create a profile if it doesn't exist
+
+    # Check if the cancel button was clicked
+    if request.GET.get('cancel'):
+        messages.info(request, 'Profile update canceled.')  # Add cancel message
+        return redirect('user_profile')  # Redirect to the profile page after canceling
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully.")  # Add success message
+            return redirect('user_profile')  # Redirect to the profile page after saving
+    else:
+        form = UserProfileForm(instance=profile)
+
+    return render(request, 'user/profile.html', {'form': form})
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Buy
+
+def cancel_order(request, pid):
+    # Check if the user is authenticated
+    if not request.user.is_authenticated:
+        messages.error(request, "You need to log in to cancel an order.")
+        return redirect('eazy_login')
+
+    # Fetch the order
+    buy = get_object_or_404(Buy, id=pid, user=request.user)
+
+    # Ensure the user owns this order
+    if buy.user != request.user:
+        messages.error(request, "You are not authorized to cancel this order.")
+        return redirect(user_booking)
+
+    # Mark the order as canceled
+    buy.status = 'Canceled'
+    buy.save()
+
+    messages.success(request, f"Order {pid} has been successfully canceled.")
+    return redirect(user_booking)
+
+
+
+
+from django.shortcuts import redirect
+from django.contrib import messages
+
+def clear_all_orders(request):
+    if request.method == "POST":
+        user = request.user
+        Buy.objects.filter(user=user).delete()
+        messages.success(request, "All orders have been cleared successfully.")
+    return redirect(user_booking)
+
+
+
+    
+
+
+
+
+
+
+   
+
 

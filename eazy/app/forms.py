@@ -34,6 +34,16 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 
+        # forms.py
+
+from django import forms
+from .models import UserProfile
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['name','address', 'phone_number', 'date_of_birth', 'gender','name', ]
+
 
 
 

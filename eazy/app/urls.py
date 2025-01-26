@@ -24,9 +24,7 @@ urlpatterns=[
     path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
-
-
-
+    path('admin/booking/', views.booking, name='booking'),
 
     # --------------user---------------------
 
@@ -40,10 +38,12 @@ urlpatterns=[
     path('user_buy/<int:pid>/', views.user_buy, name='user_buy'),
 
     path('user_buy1/<pid>',views.user_buy1),
-    path('booking',views.booking),
+    path('booking',views.booking, name='booking'),
     path('user_booking',views.user_booking),
-    path('userprd',views.userprd),
+    path('userprd',views.userprd,  name='userprd'),
     path('order/', views.order_page, name='order_page'),
     path('order_success/',views.order_success, name='order_success'),
-    
+    path('profile/', views.user_profile, name='user_profile'),
+    path('order/cancel/<int:pid>/', views.cancel_order, name='cancel_order'),
+    path('orders/clear_all/', views.clear_all_orders, name='clear_all_orders'),
 ]
