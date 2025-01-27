@@ -9,7 +9,7 @@ from .views import (
 
 urlpatterns=[
     path('', views.eazy_login, name='eazy_login'),
-    path('eazy_logout',views.eazy_logout),
+    path('eazy_logout',views.eazy_logout, name='eazy_logout'),
 
     # ----------------admin--------------------
     path('home_ad',views.home_ad),

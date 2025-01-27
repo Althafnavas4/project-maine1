@@ -68,6 +68,21 @@
             font-size: 0.95rem;
         }
 
+        .status-delivered {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .status-in-progress {
+            color: #007bff;
+            font-weight: bold;
+        }
+
         .btn-primary {
             background-color: #28a745;
             border: none;
@@ -190,7 +205,15 @@
                     <p><strong>Price:</strong> ${{ order.price }}</p>
                     <p><strong>Size:</strong> {{ order.size.size }}</p>
                     <p><strong>Order ID:</strong> {{ order.order_id }}</p>
-                    <p><strong>Status:</strong> {{ order.status }}</p>
+                    <p><strong>Status:</strong> 
+                        {% if order.status == 'Delivered' %}
+                            <span class="status-delivered">{{ order.status }}</span>
+                        {% elif order.status == 'Pending' %}
+                            <span class="status-pending">{{ order.status }}</span>
+                        {% else %}
+                            <span class="status-in-progress">{{ order.status }}</span>
+                        {% endif %}
+                    </p>
                     <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|default:'N/A' }}</p>
 
                     <!-- Trigger the modal -->

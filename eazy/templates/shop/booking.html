@@ -141,18 +141,6 @@
         </form>
     </div>
 
-    <script>
-        // Search Functionality
-        document.getElementById("searchInput").addEventListener("input", function () {
-            const filter = this.value.toLowerCase();
-            const rows = document.querySelectorAll("#ordersTable tr");
-            rows.forEach(row => {
-                const cells = Array.from(row.querySelectorAll("td"));
-                const matches = cells.some(cell => cell.textContent.toLowerCase().includes(filter));
-                row.style.display = matches ? "" : "none";
-            });
-        });
-    </script>
 </body>
 
 </html>
