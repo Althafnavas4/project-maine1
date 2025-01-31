@@ -42,6 +42,46 @@
             pointer-events: none;
             opacity: 0.6;
         }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Color Styles for Different Message Types */
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .message.info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .message button {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 
@@ -51,10 +91,11 @@
 
         <!-- Success or Error Messages -->
         {% if messages %}
-        <div class="alert-container">
+        <div class="messages">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" role="alert">
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
                 {{ message }}
+                <button class="cancel-btn" onclick="this.parentElement.style.display='none';">Cancel</button>
             </div>
             {% endfor %}
         </div>
