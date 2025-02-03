@@ -116,6 +116,7 @@
         .cart-item-actions {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
         .cart-item-actions button {
@@ -146,6 +147,26 @@
 
         .buy-btn:hover {
             background-color: #218838;
+        }
+
+        .quantity-btns {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .quantity-btns button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .quantity-btns span {
+            font-size: 16px;
+            color: #333;
         }
 
         .total {
@@ -287,6 +308,15 @@
                 </div>
             </div>
             <div class="cart-item-actions">
+                <form method="POST" action="{% url 'update_cart_quantity' item.id 'decrease' %}">
+                    {% csrf_token %}
+                    <button type="submit">-</button>
+                </form>
+                <span>{{ item.quantity }}</span>
+                <form method="POST" action="{% url 'update_cart_quantity' item.id 'increase' %}">
+                    {% csrf_token %}
+                    <button type="submit">+</button>
+                </form>
                 <form method="POST" action="{% url 'delete_cart' item.id %}">
                     {% csrf_token %}
                     <button type="submit">Remove</button>

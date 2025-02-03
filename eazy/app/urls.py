@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import update_cart_quantity
 from . import views
 from .views import (
     CustomPasswordResetView,
@@ -46,4 +47,5 @@ urlpatterns=[
     path('profile/', views.user_profile, name='user_profile'),
     path('order/cancel/<int:pid>/', views.cancel_order, name='cancel_order'),
     path('orders/clear_all/', views.clear_all_orders, name='clear_all_orders'),
+     path('update-cart/<int:cart_id>/<str:action>/', update_cart_quantity, name='update_cart_quantity'),
 ]

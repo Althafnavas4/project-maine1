@@ -352,17 +352,40 @@ def view_pro(req, pid):
 
 def add_to_cart(req, pid):
     if 'user' in req.session:
-        if req.method == 'POST':
-            product = get_object_or_404(Product, pk=pid)
-            size_name = req.POST.get('size')  # Get the selected size as a string
-            size = get_object_or_404(Size, size=size_name)  # Fetch Size by its name
-            user = User.objects.get(username=req.session['user'])
+        product = get_object_or_404(Product, pk=pid)
+        size_name = req.POST.get('size')
+        size = get_object_or_404(Size, size=size_name)
+        user = User.objects.get(username=req.session['user'])
 
-            # Create a new cart item with the selected size
-            Cart.objects.create(user=user, product=product, size=size)
-            messages.success(req, 'Product added to cart successfully.')
+        # Check if the product is already in the cart
+        cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
+
+        if not created:
+            cart_item.quantity += 1  # Increment quantity if already in cart
+        cart_item.save()
+
+        messages.success(req, 'Product added to cart successfully.')
         return redirect(view_cart)
     return redirect('eazy_login')
+
+
+
+
+def update_cart_quantity(request, cart_id, action):
+    cart_item = get_object_or_404(Cart, id=cart_id)
+
+    if action == "increase":
+        cart_item.quantity += 1
+    elif action == "decrease":
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+        else:
+            cart_item.delete()
+            return redirect(view_cart)
+
+    cart_item.save()
+    return redirect(view_cart)
+
 
 def view_cart(request):
     if 'user' in request.session:
