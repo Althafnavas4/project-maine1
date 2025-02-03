@@ -153,22 +153,32 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 
 
+
 def register(req):
-    if req.method=='POST':
-        name=req.POST['name']
-        email=req.POST['email']
-        password=req.POST['password']
-        # send_mail('user registration','eshop account created', settings.EMAIL_HOST_USER, [email])
+    if req.method == 'POST':
+        name = req.POST['name']
+        email = req.POST['email']
+        password = req.POST['password']
+        confirm_password = req.POST['confirm_password']
+        
+        # Check if the passwords match
+        if password != confirm_password:
+            messages.warning(req, 'Passwords do not match.')
+            return redirect(register)
+        
         try:
-           
-            data=User.objects.create_user(first_name=name,email=email,password=password,username=email)
+            # Create the user if passwords match
+            data = User.objects.create_user(first_name=name, email=email, password=password, username=email)
             data.save()
+            
+            # Success message
+            messages.success(req, 'Account created successfully. You can now log in.')
             return redirect(eazy_login)
         except:
-            messages.warning(req,'User already exists.')
+            messages.warning(req, 'User already exists.')
             return redirect(register)
     else:
-        return render(req,'user/register.html')
+        return render(req, 'user/register.html')
 
 
 
@@ -354,7 +364,6 @@ def add_to_cart(req, pid):
         return redirect(view_cart)
     return redirect('eazy_login')
 
-
 def view_cart(request):
     if 'user' in request.session:
         user = request.user
@@ -363,6 +372,7 @@ def view_cart(request):
         return render(request, 'user/cart.html', {'cart_items': cart_items, 'total_price': total_price})
     else:
         return redirect('eazy_login')
+
 
 
 
