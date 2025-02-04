@@ -52,6 +52,7 @@ class Buy(models.Model):
     price = models.IntegerField()
     date = models.DateField(auto_now_add=True)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
     status = models.CharField(
         max_length=50, 
         choices=STATUS_CHOICES, 

@@ -409,6 +409,9 @@ def delete_cart(request, id):
         return redirect('eazy_login')
 
 
+from django.db import transaction
+from django.db.models import F
+
 def user_buy(req, pid):
     # Get the user and cart details
     user = User.objects.get(username=req.session['user'])
@@ -416,19 +419,22 @@ def user_buy(req, pid):
     size_name = req.POST.get('size')  # Get the selected size
     size = get_object_or_404(Size, size=size_name)
     product = cart.product
-    
+    quantity_to_buy = cart.quantity  # Assuming cart has a 'quantity' field
+
     # Check if there's enough stock for the product
-    if product.quantity > 0:
-        # Reduce the quantity by 1 for the purchase
-        product.quantity -= 1
-        product.save()
+    if product.quantity >= quantity_to_buy:
+        # Use a transaction to ensure atomicity
+        with transaction.atomic():
+            # Reduce the quantity by the amount in the cart
+            product.quantity = F('quantity') - quantity_to_buy
+            product.save()
 
-        # Get the price from the cart's product offer price
-        price = cart.product.offer_price
+            # Get the price from the cart's product offer price
+            price = cart.product.offer_price
 
-        # Create the purchase record
-        buy = Buy.objects.create(user=user, product=product, price=price, size=size)
-        buy.save()
+            # Create the purchase record
+            buy = Buy.objects.create(user=user, product=product, price=price, size=size)
+            buy.save()
 
         # Provide success message and redirect to order success page
         messages.success(req, 'Product purchased successfully!')
@@ -436,8 +442,7 @@ def user_buy(req, pid):
     else:
         # Handle out-of-stock case
         messages.error(req, 'Sorry, this product is out of stock.')
-        return redirect('view_cart') 
-
+        return redirect('view_cart')
 
 
 

@@ -122,6 +122,7 @@
                             <th>Product</th>
                             <th>Price</th>
                             <th>Size</th>
+                            <th>Quantity</th> <!-- New Quantity Column -->
                             <th>Image</th>
                             <th>Date</th>
                             <th>Status</th>
@@ -142,6 +143,7 @@
                             <td>{{ buy.product.name }}</td>
                             <td>${{ buy.price }}</td>
                             <td>{{ buy.size }}</td>
+                            <td>{{ buy.quantity }}</td> <!-- Display Quantity -->
                             <td>
                                 <img src="{{ buy.product.img.url }}" alt="{{ buy.product.name }}" class="img-thumbnail"
                                     style="height: 100px; width: auto;">
