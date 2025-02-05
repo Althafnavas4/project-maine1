@@ -101,6 +101,14 @@
         </div>
         {% endif %}
 
+        <!-- Clear All Orders Button -->
+        <div class="clear-all-btn mb-4">
+            <form method="POST" action="{% url 'clear_all_orders2' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Clear All Orders</button>
+            </form>
+        </div>
+
         <!-- Search Bar -->
         <div class="mb-3">
             <input type="text" id="searchInput" class="form-control" placeholder="Search by customer name or product...">
@@ -183,6 +191,30 @@
             </div>
         </form>
     </div>
+
+    <script>
+        // Search functionality for filtering the table
+        document.getElementById('searchInput').addEventListener('input', function (event) {
+            const query = event.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTable tr');
+            
+            rows.forEach(function(row) {
+                const customerName = row.querySelector('td:nth-child(3)');
+                const productName = row.querySelector('td:nth-child(7)');
+                
+                if (customerName && productName) {
+                    const customerText = customerName.textContent.toLowerCase();
+                    const productText = productName.textContent.toLowerCase();
+                    
+                    if (customerText.includes(query) || productText.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+    </script>
 
 </body>
 

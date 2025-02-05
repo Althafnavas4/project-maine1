@@ -286,7 +286,6 @@ def delete(req,pid):
     return redirect(home_ad)
 
 
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Buy, Order
@@ -312,14 +311,12 @@ def booking(req):
         return redirect('booking')  # Redirect to refresh the admin page
 
     # Display all orders and buys
-    buys = Buy.objects.all().order_by('-date')
-    orders = Order.objects.all().order_by('-created_at')
+    buys = Buy.objects.all().order_by('-date')  # Adjust to sort by the appropriate field
+    orders = Order.objects.all().order_by('-created_at')  # Adjust to sort by the appropriate field
 
-    # Ensure the lists of buys and orders are aligned
-    # You can adjust this based on how you want to pair them together, e.g., via a foreign key relation
-    combined_data = zip(buys, orders)  # This is okay if the two lists align correctly
+    combined_data = zip(buys, orders)
 
-    return render(req, 'shop/booking.html', {'combined_data': combined_data})
+    return render(req, 'shop/booking.html', {'combined_data': combined_data, 'buys': buys, 'orders': orders})
 
 
 
@@ -370,28 +367,39 @@ def add_to_cart(req, pid):
 
 
 
-
+# Update cart quantity and adjust the total price accordingly
 def update_cart_quantity(request, cart_id, action):
     cart_item = get_object_or_404(Cart, id=cart_id)
 
+    # Get the price of the product
+    item_price = cart_item.product.offer_price  # Assuming 'product' is a related field on Cart
+
+    # Increase or decrease quantity and update total price
     if action == "increase":
         cart_item.quantity += 1
     elif action == "decrease":
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
         else:
-            cart_item.delete()
+            
             return redirect(view_cart)
 
+    # Update total price based on new quantity
+    cart_item.total_price = cart_item.quantity * float(item_price)
     cart_item.save()
+
     return redirect(view_cart)
 
 
+# View the cart and calculate the total price dynamically based on quantity and product price
 def view_cart(request):
     if 'user' in request.session:
         user = request.user
         cart_items = Cart.objects.filter(user=user)
-        total_price = sum(float(item.product.offer_price) for item in cart_items) if cart_items else 0
+
+        # Calculate the total price based on quantity and individual item price
+        total_price = sum(item.total_price for item in cart_items) if cart_items else 0
+
         return render(request, 'user/cart.html', {'cart_items': cart_items, 'total_price': total_price})
     else:
         return redirect('eazy_login')
@@ -407,16 +415,17 @@ def delete_cart(request, id):
         return redirect(view_cart)
     else:
         return redirect('eazy_login')
-
-
 from django.db import transaction
 from django.db.models import F
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import User, Cart, Product, Size, Buy
 
 def user_buy(req, pid):
     # Get the user and cart details
     user = User.objects.get(username=req.session['user'])
     cart = Cart.objects.get(pk=pid)
-    size_name = req.POST.get('size')  # Get the selected size
+    size_name = req.POST.get('size')  # Get the selected size from the form
     size = get_object_or_404(Size, size=size_name)
     product = cart.product
     quantity_to_buy = cart.quantity  # Assuming cart has a 'quantity' field
@@ -425,24 +434,35 @@ def user_buy(req, pid):
     if product.quantity >= quantity_to_buy:
         # Use a transaction to ensure atomicity
         with transaction.atomic():
-            # Reduce the quantity by the amount in the cart
+            # Reduce the product's stock by the amount in the cart
             product.quantity = F('quantity') - quantity_to_buy
             product.save()
 
-            # Get the price from the cart's product offer price
-            price = cart.product.offer_price
+            # Get the total price from the cart (already calculated)
+            price = cart.total_price  # This is the price calculated in Cart model
 
-            # Create the purchase record
-            buy = Buy.objects.create(user=user, product=product, price=price, size=size)
-            buy.save()
+            # Create the purchase records for each item in the cart
+            for _ in range(quantity_to_buy):
+                # Create a separate Buy record for each product quantity
+                Buy.objects.create(
+                    user=user,
+                    product=product,
+                    price=price / quantity_to_buy,  # Price per item
+                    size=size,
+                    quantity=1  # Store the quantity of 1 for each separate record
+                )
+
+            # Optionally remove the item from the cart after purchase
+            cart.delete()  # This deletes the cart item. You can also update it if needed.
 
         # Provide success message and redirect to order success page
-        messages.success(req, 'Product purchased successfully!')
-        return redirect('order_page')  # Ensure 'order_success' is a valid URL pattern
+        messages.success(req, f'Product "{product.name}" purchased successfully!')
+        return redirect('order_page')  # Ensure 'order_page' is a valid URL pattern
     else:
         # Handle out-of-stock case
         messages.error(req, 'Sorry, this product is out of stock.')
-        return redirect('view_cart')
+        return redirect('view_cart')  # Ensure 'view_cart' is a valid URL pattern
+
 
 
 
@@ -641,6 +661,23 @@ def clear_all_orders(request):
 
 
 
+from django.shortcuts import redirect
+from django.contrib import messages
+from .models import Buy, Order
+
+def clear_all_orders2(request):
+    if request.method == "POST":
+        # Ensure the user has admin privileges before clearing orders
+        if request.user.is_staff:  # This check ensures only admins can clear orders
+            # Delete all Buy and Order objects (for all users)
+            Buy.objects.all().delete()  # Deletes all buy records for all users
+            Order.objects.all().delete()  # Deletes all order records for all users
+            
+            messages.success(request, "All orders have been cleared successfully.")
+        else:
+            messages.error(request, "You do not have permission to clear all orders.")
+
+    return redirect(booking)  # Redirect to admin booking page. Make sure this URL is correct.
 
 
 

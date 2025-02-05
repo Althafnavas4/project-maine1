@@ -32,9 +32,15 @@ class Product(models.Model):
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
     size = models.ForeignKey(Size, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)  # Add quantity field
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
+    def save(self, *args, **kwargs):
+        # Automatically calculate the total price based on quantity
+        self.total_price = self.quantity * float(self.product.offer_price)
+        super(Cart, self).save(*args, **kwargs)  # Add quantity field
+   
     # Quantity field
 
 
@@ -81,6 +87,8 @@ class Order(models.Model):
 
 
 
+
+# app/models.py
 
 
 
