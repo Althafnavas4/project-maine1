@@ -9,7 +9,9 @@ from .views import (
 )
 
 urlpatterns=[
-    path('', views.eazy_login, name='eazy_login'),
+
+    path('',views.user_home3),
+    path('login', views.eazy_login, name='eazy_login'),
     path('eazy_logout',views.eazy_logout, name='eazy_logout'),
 
     # ----------------admin--------------------
@@ -29,7 +31,7 @@ urlpatterns=[
 
     # --------------user---------------------
 
-
+    
     path('register',views.register),
     path('user_home',views.user_home),
     path('view_pro/<pid>',views.view_pro),

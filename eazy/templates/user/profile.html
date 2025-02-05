@@ -163,6 +163,13 @@
             </div>
         {% endif %}
 
+        <!-- Display message for first-time profile visit -->
+        {% if profile.first_name == "" or profile.last_name == "" %}
+            <div class="alert alert-info">
+                <p>Please fill in your profile details.</p>
+            </div>
+        {% endif %}
+
         <div class="form-container">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}

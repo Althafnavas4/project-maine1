@@ -56,6 +56,24 @@
         button:hover {
             background-color: #218838;
         }
+        .size-selection {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .size-option {
+            background-color: #f4f4f4;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .size-option.selected {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -81,24 +99,38 @@
             <label for="img">Image</label>
             <input type="file" name="img" required>
 
-
             <label for="quantity">Quantity</label>
             <input type="number" name="quantity" placeholder="Quantity" required>
 
-
             <label for="sizes">Select Sizes</label>
-            <select name="sizes" multiple required>
+            <div class="size-selection" id="size-selection">
                 {% for size in all_sizes %}
-                    <option value="{{ size.size }}">{{ size.size }}</option>
+                    <div class="size-option" data-size="{{ size.size }}">{{ size.size }}</div>
                 {% endfor %}
-            </select>
-            
+            </div>
+            <input type="hidden" name="sizes" id="sizes-input">
 
             <button type="submit">Add Product</button>
         </form>
     </div>
+
+    <script>
+        // Handle the size selection
+        const sizeSelection = document.getElementById('size-selection');
+        const sizesInput = document.getElementById('sizes-input');
+
+        sizeSelection.addEventListener('click', function(event) {
+            if (event.target.classList.contains('size-option')) {
+                event.target.classList.toggle('selected');
+                updateSizesInput();
+            }
+        });
+
+        function updateSizesInput() {
+            const selectedSizes = Array.from(document.querySelectorAll('.size-option.selected'))
+                .map(option => option.getAttribute('data-size'));
+            sizesInput.value = selectedSizes.join(',');  // Join selected sizes with a comma
+        }
+    </script>
 </body>
 </html>
-
-
-

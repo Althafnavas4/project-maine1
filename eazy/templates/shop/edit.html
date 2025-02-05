@@ -18,73 +18,109 @@
             justify-content: center;
             align-items: center;
         }
+        .size-selection {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .size-option {
+            background-color: #f4f4f4;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .size-option.selected {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
     </style>
 </head>
 <body class="bodybg">
     <div class="form-container">
-    <div>
-    <h4>UPDATE PRODUCTS</h4><br>
-    <form action="" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div class="card edit-card">
-        <img class="cardimg" src="{{product.img.url}}" alt="" width="200px">
-        <div class="card-body">
-          <label for="img" class="form-label">Change Image:</label>
-          <input type="file" class="form-control" name="img">
+        <div>
+            <h4>UPDATE PRODUCTS</h4><br>
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card edit-card">
+                    <img class="cardimg" src="{{ product.img.url }}" alt="" width="200px">
+                    <div class="card-body">
+                        <label for="img" class="form-label">Change Image:</label>
+                        <input type="file" class="form-control" name="img">
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label for="prod_id" class="form-label">Product ID:</label>
+                    <input type="text" class="form-control" placeholder="Enter Product Id" name="prd_id" value="{{ product.pro_id }}">
+                </div>
+
+                <div class="mb-2">
+                    <label for="prd_name" class="form-label">Product Name:</label>
+                    <input type="text" class="form-control" placeholder="Enter Product name" name="prd_name" value="{{ product.name }}">
+                </div>
+
+                <div class="mb-2">
+                    <label for="price" class="form-label">Price:</label>
+                    <input type="number" class="form-control" placeholder="Enter Product price" name="prd_price" value="{{ product.price }}">
+                </div>
+
+                <div class="mb-2">
+                    <label for="dis" class="form-label">Description:</label>
+                    <input type="text" class="form-control" placeholder="Enter Product details" name="dis" value="{{ product.dis }}">
+                </div>
+
+                <div class="mb-2">
+                    <label for="ofrprice" class="form-label">Offer Price:</label>
+                    <input type="number" class="form-control" placeholder="Enter Offer price" name="ofr_price" value="{{ product.offer_price }}">
+                </div>
+
+                <!-- Quantity Input -->
+                <div class="mb-2">
+                    <label for="quantity" class="form-label">Quantity:</label>
+                    <input type="number" class="form-control" placeholder="Quantity" name="quantity" value="{{ product.quantity }}" required>
+                </div>
+
+                <!-- Size Selection -->
+                <div class="mb-2">
+                    <label for="sizes" class="form-label">Select Sizes:</label>
+                    <div class="size-selection" id="size-selection">
+                        {% for size in all_sizes %}
+                            <div class="size-option" data-size="{{ size.size }}" 
+                                {% if size.size in selected_sizes %} class="selected" {% endif %}>
+                                {{ size.size }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="sizes" id="sizes-input">
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">UPDATE</button>
+                </div>
+            </form>
         </div>
-      </div>
-        <div class="mb-2">
-          
-        </div>
-        <div class="mb-2 mt-2">
-            <label for="prod_id" class="form-label">Product ID:</label>
-            <input type="text" class="form-control" placeholder="Enter Product Id" name="prd_id" value="{{product.pro_id}}">
-          </div>
-          <div class="mb-2">
-            <label for="prd_name" class="form-label">Product Name:</label>
-            <input type="text" class="form-control" placeholder="Enter Product name" name="prd_name" value="{{product.name}}">
-          </div>
-          <div class="mb-2">
-            <label for="price" class="form-label">Price:</label>
-            <input type="number" class="form-control" placeholder="Enter Product price" name="prd_price" value="{{product.price}}">
-          </div>
+    </div>
 
-          <div class="mb-2">
-            <label for="dis" class="form-label">Description:</label>
-            <input type="text" class="form-control" placeholder="Enter Product details" name="dis" value="{{product.dis}}">
-          </div>
-          
-          <div class="mb-2">
-            <label for="ofrprice" class="form-label">Offer Price:</label>
-            <input type="number" class="form-control" placeholder="Enter Offer price" name="ofr_price" value="{{product.offer_price}}">
-          </div>
+    <script>
+        // Handle the size selection
+        const sizeSelection = document.getElementById('size-selection');
+        const sizesInput = document.getElementById('sizes-input');
 
-          <!-- Quantity Input -->
-          <div class="mb-2">
-            <label for="quantity" class="form-label">Quantity:</label>
-            <input type="number" class="form-control" placeholder="Quantity" name="quantity" value="{{product.quantity}}" required>
-          </div>
+        sizeSelection.addEventListener('click', function(event) {
+            if (event.target.classList.contains('size-option')) {
+                event.target.classList.toggle('selected');
+                updateSizesInput();
+            }
+        });
 
-          <!-- Size Selection -->
-          <div class="mb-2">
-            <label for="sizes" class="form-label">Select Sizes:</label>
-            <select name="sizes" class="form-control" multiple>
-                {% for size in all_sizes %}
-                    <option value="{{ size.size }}"
-                            {% if size in selected_sizes %}selected{% endif %}>
-                        {{ size.size }}
-                    </option>
-                {% endfor %}
-            </select>
-          </div>
-
-          <div class="form-check mb-2">
-          </div>
-          <div>
-            <button type="submit" class="btn btn-primary">UPDATE</button>
-          </div>
-    </form>
-</div>
-</div>
+        function updateSizesInput() {
+            const selectedSizes = Array.from(document.querySelectorAll('.size-option.selected'))
+                .map(option => option.getAttribute('data-size'));
+            sizesInput.value = selectedSizes.join(',');  // Join selected sizes with a comma
+        }
+    </script>
 </body>
 </html>

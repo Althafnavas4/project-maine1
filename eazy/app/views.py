@@ -326,7 +326,13 @@ def booking(req):
 
     #------------------------user--------------------------------
 
+def user_home3(req):
+    if 'user' in req.session:
+        data=Product.objects.all()
+        return render(req, 'first.html', {'data': data, 'user': req.user})
 
+    else:
+        return redirect(eazy_login)
 
 def user_home(req):
     if 'user' in req.session:

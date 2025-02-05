@@ -303,7 +303,15 @@
                 <img src="{{ item.product.img.url }}" alt="{{ item.product.name }}">
                 <div class="cart-item-info">
                     <h4>{{ item.product.name }}</h4>
-                    <p><strong>Price:</strong> ${{ item.product.offer_price }}</p>
+                    <p>
+                        <strong>Price:</strong>
+                        {% if item.product.offer_price %}
+                            <span style="text-decoration: line-through;">${{ item.product.price }}</span>
+                            <span style="color: #28a745;">${{ item.product.offer_price }}</span>
+                        {% else %}
+                            ${{ item.product.price }}
+                        {% endif %}
+                    </p>
                     <p><strong>Size:</strong> {{ item.size }}</p>
                 </div>
             </div>
