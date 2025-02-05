@@ -51,4 +51,5 @@ urlpatterns=[
     path('orders/clear_all/', views.clear_all_orders, name='clear_all_orders'),
     path('update-cart/<int:cart_id>/<str:action>/', update_cart_quantity, name='update_cart_quantity'),
     path('clear_all_orders2', views.clear_all_orders2, name='clear_all_orders2'),
+    path('shop-now/', views.shop_now, name='shop_now'),
 ]

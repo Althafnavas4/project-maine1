@@ -726,3 +726,20 @@ def clear_all_orders2(request):
    
 
 
+
+
+from django.shortcuts import redirect
+from .models import UserProfile
+
+def shop_now(request):
+    user = request.user
+
+    try:
+        profile = user.userprofile
+        # Check if required fields are filled
+        if profile.name and user.email and profile.address:  # Check user.email instead of profile.email
+            return redirect(userprd)  # Redirect to user products page
+        else:
+            return redirect(user_profile)  # Redirect to profile page if incomplete
+    except UserProfile.DoesNotExist:
+        return redirect(user_profile)  # Redirect to profile if it doesn't exist
