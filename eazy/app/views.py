@@ -633,8 +633,8 @@ def user_orders_view(request):
 
 
 
-from django.contrib import messages
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .forms import UserProfileForm
 from .models import UserProfile
 
@@ -650,6 +650,14 @@ def user_profile(request):
         messages.info(request, 'Profile update canceled.')  # Add cancel message
         return redirect('user_profile')  # Redirect to the profile page after canceling
 
+    # Check if the profile is already fully completed (first time filling profile)
+    if profile.name and profile.address and not profile.is_filled:
+        # If name and address are filled for the first time, mark profile as filled
+        profile.is_filled = True
+        profile.save()
+        messages.success(request, "Profile updated successfully! Proceeding to shop.")
+        return redirect('userprd')  # Redirect to the 'userprd' page after first-time profile fill
+
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
@@ -657,7 +665,9 @@ def user_profile(request):
             form.save()
 
             # If the profile fields (like name or address) are filled, redirect to userprd (shop page)
-            if profile.name and profile.address:
+            if profile.name and profile.address and not profile.is_filled:
+                profile.is_filled = True  # Mark profile as filled after first-time completion
+                profile.save()
                 messages.success(request, "Profile updated successfully! Proceeding to shop.")
                 return redirect('userprd')  # Redirect to the 'userprd' page after successful submission
 
