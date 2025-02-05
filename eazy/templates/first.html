@@ -256,7 +256,8 @@
         <div class="row">
             {% for product in data %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                <a href="{% if user.is_authenticated %}#{% else %}login{% endif %}" class="text-decoration-none">
+                <!-- Always redirect to the login page when a product is clicked -->
+                <a href="login" class="text-decoration-none">
                     <div class="product-card">
                         <img src="{{product.img.url}}" alt="{{product.name}}">
                         <div class="product-card-body">

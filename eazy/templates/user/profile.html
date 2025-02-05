@@ -122,6 +122,12 @@
         .cancel-btn:hover {
             background-color: #999;
         }
+
+        /* Styling for the cancel button when it's not part of a form */
+        .cancel-container {
+            margin-top: 15px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -163,24 +169,35 @@
             </div>
         {% endif %}
 
-        <!-- Display message for first-time profile visit -->
-        {% if profile.first_name == "" or profile.last_name == "" %}
-            <div class="alert alert-info">
-                <p>Please fill in your profile details.</p>
-            </div>
-        {% endif %}
-
         <div class="form-container">
+            <!-- Profile Update Form -->
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form.as_p }}
+
+                <!-- Render form fields with error messages for each field -->
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="alert alert-danger">
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
                 <button type="submit">Save Changes</button>
             </form>
             
             <!-- Cancel Button -->
-            <form action="{% url 'user_profile' %}" method="get">
-                <button type="submit" class="cancel-btn" name="cancel" value="true">Cancel</button>
-            </form>
+            <div class="cancel-container">
+                <form action="{% url 'user_profile' %}" method="get">
+                    <button type="submit" class="cancel-btn" name="cancel" value="true">Cancel</button>
+                </form>
+            </div>
         </div>
     </div>
 

@@ -326,13 +326,13 @@ def booking(req):
 
     #------------------------user--------------------------------
 
-def user_home3(req):
-    if 'user' in req.session:
-        data=Product.objects.all()
-        return render(req, 'first.html', {'data': data, 'user': req.user})
+from django.shortcuts import render
+from .models import Product
 
-    else:
-        return redirect(eazy_login)
+def user_home3(req):
+    data = Product.objects.all()  # Get all products from the database
+    return render(req, 'first.html', {'data': data, 'user': req.user})  # Render the page for all users
+
 
 def user_home(req):
     if 'user' in req.session:
@@ -633,7 +633,6 @@ def user_orders_view(request):
 
 
 
-
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import UserProfileForm
@@ -654,13 +653,24 @@ def user_profile(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
+            # Save the form data
             form.save()
-            messages.success(request, "Your profile has been updated successfully.")  # Add success message
-            return redirect('user_profile')  # Redirect to the profile page after saving
+
+            # If the profile fields (like name or address) are filled, redirect to userprd (shop page)
+            if profile.name and profile.address:
+                messages.success(request, "Profile updated successfully! Proceeding to shop.")
+                return redirect('userprd')  # Redirect to the 'userprd' page after successful submission
+
+            # Success message for updating the profile (without going to userprd)
+            messages.success(request, "Your profile has been updated successfully.")
+            return redirect('user_profile')  # Redirect back to the profile page after saving
+
     else:
         form = UserProfileForm(instance=profile)
 
     return render(request, 'user/profile.html', {'form': form})
+
+
 
 
 from django.shortcuts import get_object_or_404, redirect
