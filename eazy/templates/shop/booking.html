@@ -135,7 +135,7 @@
                             <th>Date</th>
                             <th>Status</th>
                             <th>Action</th>
-                            <th>Cancel</th>
+                           
                         </tr>
                     </thead>
                     <tbody id="ordersTable">
@@ -176,14 +176,7 @@
                                 <button type="submit" name="update" value="{{ buy.id }}" class="btn btn-primary">Update
                                 </button>
                             </td>
-                            <td>
-                                {% if buy.status != 'Canceled' %}
-                                <button type="submit" name="cancel" value="{{ buy.id }}" class="btn btn-danger">Cancel
-                                    Order</button>
-                                {% else %}
-                                <button type="button" class="btn btn-danger disabled-btn" disabled>Order Canceled</button>
-                                {% endif %}
-                            </td>
+                           
                         </tr>
                         {% endfor %}
                     </tbody>

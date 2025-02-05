@@ -368,6 +368,10 @@ def add_to_cart(req, pid):
 
 
 # Update cart quantity and adjust the total price accordingly
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Cart
+
 def update_cart_quantity(request, cart_id, action):
     cart_item = get_object_or_404(Cart, id=cart_id)
 
@@ -381,14 +385,21 @@ def update_cart_quantity(request, cart_id, action):
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
         else:
-            
-            return redirect(view_cart)
+            cart_item.delete()
+            messages.success(request, "Item removed from cart.")
+            return redirect('view_cart')
 
     # Update total price based on new quantity
     cart_item.total_price = cart_item.quantity * float(item_price)
-    cart_item.save()
 
+    # Save the updated cart item
+    cart_item.save(update_fields=['quantity', 'total_price'])  # Ensure the update is saved
+
+    messages.success(request, f"Updated cart: {cart_item.product.name}, Quantity: {cart_item.quantity}")
+    
     return redirect(view_cart)
+
+
 
 
 # View the cart and calculate the total price dynamically based on quantity and product price
@@ -415,6 +426,7 @@ def delete_cart(request, id):
         return redirect(view_cart)
     else:
         return redirect('eazy_login')
+
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect
@@ -422,46 +434,57 @@ from django.contrib import messages
 from .models import User, Cart, Product, Size, Buy
 
 def user_buy(req, pid):
-    # Get the user and cart details
-    user = User.objects.get(username=req.session['user'])
-    cart = Cart.objects.get(pk=pid)
-    size_name = req.POST.get('size')  # Get the selected size from the form
+    user = get_object_or_404(User, username=req.session.get('user'))
+    
+    # Fetch the updated cart item
+    cart = get_object_or_404(Cart, pk=pid)
+    
+    size_name = req.POST.get('size')
     size = get_object_or_404(Size, size=size_name)
     product = cart.product
-    quantity_to_buy = cart.quantity  # Assuming cart has a 'quantity' field
+    quantity_to_buy = cart.quantity
+    total_price = cart.total_price  
 
-    # Check if there's enough stock for the product
-    if product.quantity >= quantity_to_buy:
-        # Use a transaction to ensure atomicity
-        with transaction.atomic():
-            # Reduce the product's stock by the amount in the cart
-            product.quantity = F('quantity') - quantity_to_buy
-            product.save()
+    with transaction.atomic():
+        # Lock the product row to prevent race conditions
+        product = Product.objects.select_for_update().get(pk=product.pk)
 
-            # Get the total price from the cart (already calculated)
-            price = cart.total_price  # This is the price calculated in Cart model
+        if product.quantity < quantity_to_buy:
+            messages.error(req, 'Sorry, this product is out of stock.')
+            return redirect('view_cart')
 
-            # Create the purchase records for each item in the cart
-            for _ in range(quantity_to_buy):
-                # Create a separate Buy record for each product quantity
-                Buy.objects.create(
-                    user=user,
-                    product=product,
-                    price=price / quantity_to_buy,  # Price per item
-                    size=size,
-                    quantity=1  # Store the quantity of 1 for each separate record
-                )
+        # Reduce stock
+        product.quantity = F('quantity') - quantity_to_buy
+        product.save(update_fields=['quantity'])
 
-            # Optionally remove the item from the cart after purchase
-            cart.delete()  # This deletes the cart item. You can also update it if needed.
+        # Filter all existing Buy entries for this user, product, and size
+        existing_buy_entries = Buy.objects.filter(
+            user=user,
+            product=product,
+            size=size
+        )
 
-        # Provide success message and redirect to order success page
-        messages.success(req, f'Product "{product.name}" purchased successfully!')
-        return redirect('order_page')  # Ensure 'order_page' is a valid URL pattern
-    else:
-        # Handle out-of-stock case
-        messages.error(req, 'Sorry, this product is out of stock.')
-        return redirect('view_cart')  # Ensure 'view_cart' is a valid URL pattern
+        if existing_buy_entries.exists():
+            # If Buy entries exist, update their quantity and price
+            for entry in existing_buy_entries:
+                entry.quantity += quantity_to_buy  # Add quantity
+                entry.price += total_price  # Add total price
+                entry.save(update_fields=['quantity', 'price'])
+        else:
+            # If no Buy entries exist, create a new one
+            Buy.objects.create(
+                user=user,
+                product=product,
+                price=total_price,
+                size=size,
+                quantity=quantity_to_buy
+            )
+
+        # Remove the cart item after successful purchase
+        cart.delete()
+
+    messages.success(req, f'Product "{product.name}" purchased successfully!')
+    return redirect('order_page')
 
 
 
@@ -535,18 +558,31 @@ def userprd(req):
     
 from .forms import OrderForm
 
+# views.py
+from django.shortcuts import render, redirect
+from .forms import OrderForm
+from django.contrib import messages
+
 def order_page(request):
-    if 'user' in request.session:
+    if request.user.is_authenticated:
+        user = request.user  # Get logged-in user
+        
         if request.method == "POST":
             form = OrderForm(request.POST)
             if form.is_valid():
-                form.save()
-                return redirect(order_success)  # Redirect to a success page
+                # Process the order and save it
+                order = form.save(commit=False)
+                order.user = user  # Link order to the user
+                order.save()
+                messages.success(request, "Order placed successfully.")
+                return redirect(order_success)  # Redirect to success page
         else:
-            form = OrderForm()
+            # Pre-fill form with user details
+            form = OrderForm(initial={'user': user})
+        
         return render(request, 'user/order.html', {'form': form})
     else:
-        return redirect(eazy_login)
+        return redirect('login')  # Redirect to login page if not authenticated
 
 
 

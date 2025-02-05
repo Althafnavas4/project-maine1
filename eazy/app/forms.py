@@ -7,16 +7,29 @@ from django.contrib.auth.forms import PasswordResetForm
 
 
 
+# forms.py
 from django import forms
-from .models import Order
+from .models import Order, UserProfile
 
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['customer_name', 'phone_number', 'email', 'address']
-        widgets = {
-            'address': forms.Textarea(attrs={'rows': 3}),
-        }
+        fields = ['customer_name', 'phone_number', 'email', 'address']  # Removed 'product', 'quantity', 'size'
+    
+    def __init__(self, *args, **kwargs):
+        super(OrderForm, self).__init__(*args, **kwargs)
+        user = kwargs.get('initial', {}).get('user', None)
+        
+        if user:
+            try:
+                profile = UserProfile.objects.get(user=user)
+                self.fields['customer_name'].initial = profile.name
+                self.fields['phone_number'].initial = profile.phone_number
+                self.fields['address'].initial = profile.address
+                self.fields['email'].initial = user.email  # Email from user model
+            except UserProfile.DoesNotExist:
+                pass
+
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
