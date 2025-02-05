@@ -530,6 +530,8 @@ def user_buy1(req, pid):
                                             
 
 
+from django.utils import timezone
+
 def user_booking(req):
     user = User.objects.get(username=req.session['user'])
     buy = Buy.objects.filter(user=user).order_by('-date')
@@ -542,6 +544,7 @@ def user_booking(req):
             'size': order.size,
             'order_id': order.id,  # Ensure this is populated
             'status': order.status,
+            'quantity': order.quantity,  # Add the quantity to the context
             'estimated_delivery': order.date + timezone.timedelta(days=5),
             'shipping_address': user.userprofile.address if hasattr(user, 'userprofile') and user.userprofile.address else 'No address provided',
             'email': user.email if user.email else 'No email provided',
@@ -549,6 +552,7 @@ def user_booking(req):
         })
 
     return render(req, 'user/bookings.html', {'buy': enriched_buy})
+
 
 
 

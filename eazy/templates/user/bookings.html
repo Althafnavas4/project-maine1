@@ -40,12 +40,13 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 20px;
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            /* Removed transition */
         }
 
         .order-card:hover {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transform: translateY(-3px);
+            /* Removed hover effects */
+            box-shadow: none;
+            transform: none;
         }
 
         .order-card img {
@@ -204,6 +205,7 @@
                     <h4>{{ order.product.name }}</h4>
                     <p><strong>Price:</strong> ${{ order.price }}</p>
                     <p><strong>Size:</strong> {{ order.size.size }}</p>
+                    <p><strong>Quantity:</strong> {{ order.quantity }}</p>  <!-- Display Quantity -->
                     <p><strong>Order ID:</strong> {{ order.order_id }}</p>
                     <p><strong>Status:</strong> 
                         {% if order.status == 'Delivered' %}
@@ -234,6 +236,7 @@
                                     <p><strong>Product Name:</strong> {{ order.product.name }}</p>
                                     <p><strong>Price:</strong> ${{ order.price }}</p>
                                     <p><strong>Size:</strong> {{ order.size.size }}</p>
+                                    <p><strong>Quantity:</strong> {{ order.quantity }}</p>  <!-- Display Quantity -->
                                     <p><strong>Order ID:</strong> {{ order.order_id }}</p>
                                     <p><strong>Status:</strong> {{ order.status }}</p>
                                     <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|default:'N/A' }}</p>
