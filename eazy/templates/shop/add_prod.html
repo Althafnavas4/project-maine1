@@ -11,26 +11,31 @@
             margin: 0;
             padding: 20px;
         }
+
         .container {
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
+
         h2 {
             text-align: center;
             color: #333;
         }
+
         form {
             display: flex;
             flex-direction: column;
         }
+
         label {
             font-weight: bold;
             margin-top: 10px;
         }
+
         input[type="text"],
         input[type="number"],
         textarea,
@@ -41,9 +46,11 @@
             border-radius: 5px;
             font-size: 14px;
         }
+
         select {
             height: 100px;
         }
+
         button {
             background-color: #28a745;
             color: white;
@@ -52,14 +59,18 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s ease;
         }
+
         button:hover {
             background-color: #218838;
         }
+
         .size-selection {
             display: flex;
             flex-wrap: wrap;
         }
+
         .size-option {
             background-color: #f4f4f4;
             padding: 10px 20px;
@@ -71,21 +82,65 @@
             display: flex;
             align-items: center;
         }
+
         .size-option input {
             margin-right: 5px;
         }
+
         .size-option.selected {
             background-color: #28a745;
             color: white;
             border-color: #28a745;
         }
+
+        /* Back Button */
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .back-button a {
+            display: flex;
+            align-items: center;
+            background-color: #ccc;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-button a:hover {
+            background-color: #bbb;
+        }
+
+        .back-button i {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Back Button -->
+    <div class="back-button">
+        <a href="javascript:history.back()">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
     <div class="container">
         <h2>Add Product</h2>
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            
             <label for="prd_id">Product ID</label>
             <input type="text" name="prd_id" placeholder="Product ID" required>
 
@@ -136,7 +191,7 @@
             const selectedSizes = Array.from(document.querySelectorAll('input[name="sizes"]:checked'))
                 .map(option => option.value);
             console.log(selectedSizes); // You can also send this data as needed.
-            
+
             // Update the hidden input field with the selected sizes (optional)
             // If you want to submit the selected sizes as a hidden input:
             const sizesInput = document.createElement('input');
@@ -149,5 +204,8 @@
             form.appendChild(sizesInput);
         }
     </script>
+
+    <!-- Font Awesome for arrow icon -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 </body>
 </html>
