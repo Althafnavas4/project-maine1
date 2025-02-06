@@ -163,10 +163,75 @@
         .clear-all-btn form {
             display: inline;
         }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: #f30000 !important;
+        }
+
+        .navbar-brand {
+            color: #ffffff !important;
+            font-weight: bold;
+        }
+
+        .navbar-nav .nav-link {
+            color: #ffffff !important;
+            font-size: 1.1rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #f8f8f8 !important;
+            text-decoration: underline;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: #f5e1d9 !important;
+        }
+
+        /* Profile Icon Style */
+        .nav-link i.fas {
+            font-size: 1.3rem; /* Adjust the size of the icon */
+            margin-right: 8px;  /* Space between icon and text */
+        }
+
+        .nav-link:hover i.fas {
+            color: #f5e1d9; /* Change color on hover */
+        }
     </style>
 </head>
 
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">EAZY</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'userprd' %}">Shop</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'view_cart' %}">Cart</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'user_booking' %}">Booking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'user_profile' %}">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'eazy_logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <header>
         <h1>Your Orders</h1>
     </header>

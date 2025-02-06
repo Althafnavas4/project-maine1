@@ -42,7 +42,7 @@ urlpatterns=[
 
     path('user_buy1/<pid>',views.user_buy1),
     path('booking',views.booking, name='booking'),
-    path('user_booking',views.user_booking),
+    path('user_booking',views.user_booking, name='user_booking'),
     path('userprd',views.userprd,  name='userprd'),
     path('order/', views.order_page, name='order_page'),
     path('order_success/',views.order_success, name='order_success'),
