@@ -18,8 +18,8 @@
         }
 
         header {
-            background-color: #007bff;
-            color: white;
+            background-color: #ffffff;
+            color: rgb(72, 73, 83);
             padding: 20px 0;
             text-align: center;
         }
@@ -40,13 +40,6 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 20px;
-            /* Removed transition */
-        }
-
-        .order-card:hover {
-            /* Removed hover effects */
-            box-shadow: none;
-            transform: none;
         }
 
         .order-card img {
@@ -136,34 +129,6 @@
             color: #666;
         }
 
-        .modal-content {
-            background-color: #ffffff;
-            border-radius: 12px;
-        }
-
-        .modal-header {
-            border-bottom: 2px solid #ddd;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        .alert-container {
-            margin-bottom: 20px;
-        }
-
-        .clear-all-btn {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .clear-all-btn form {
-            display: inline;
-        }
-
         /* Navbar Styles */
         .navbar {
             background-color: #f30000 !important;
@@ -190,12 +155,12 @@
 
         /* Profile Icon Style */
         .nav-link i.fas {
-            font-size: 1.3rem; /* Adjust the size of the icon */
-            margin-right: 8px;  /* Space between icon and text */
+            font-size: 1.3rem;
+            margin-right: 8px;
         }
 
         .nav-link:hover i.fas {
-            color: #f5e1d9; /* Change color on hover */
+            color: #f5e1d9;
         }
     </style>
 </head>
@@ -237,7 +202,6 @@
     </header>
 
     <div class="container mt-4">
-
         <!-- Display Messages -->
         <div class="alert-container">
             {% if messages %}
@@ -325,16 +289,13 @@
             {% endfor %}
         </div>
         {% else %}
-        <div class="no-orders">
-            <p>You currently have no orders.</p>
-        </div>
+        <div class="no-orders">You have no orders yet!</div>
         {% endif %}
     </div>
 
     <footer>
-        <p>&copy; 2024 Footwear Store. All rights reserved.</p>
+        <p>&copy; 2025 EAZY. All rights reserved.</p>
     </footer>
-
 </body>
 
 </html>

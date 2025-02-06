@@ -87,6 +87,42 @@
             background: linear-gradient(90deg, #0056b3, #003f80);
         }
 
+        /* Back buttons style */
+        .back-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            margin-bottom: 50px; /* Ensure space between form and footer */
+        }
+
+        .back-buttons a, .back-buttons button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .back-buttons a:hover, .back-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-buttons .back {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-buttons .back::after {
+            content: "←";
+            margin-left: 8px;
+        }
+
         /* Footer style */
         footer {
             text-align: center;
@@ -164,15 +200,27 @@
     </style>
 </head>
 <body>
+
     <h1>Place Your Order</h1>
+
+    <!-- Order Form -->
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Submit Order</button>
     </form>
+
+    <!-- Back Buttons below the form -->
+    <div class="back-buttons">
+        <a class="back" href="javascript:history.back()">Back</a>
+        <a href="{% url 'userprd' %}">Back to Home</a>
+    </div>
+
+    <!-- Footer -->
     <footer>
         <p>&copy; 2024 Your Company. All rights reserved.</p>
         <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
     </footer>
+
 </body>
 </html>

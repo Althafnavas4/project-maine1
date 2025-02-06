@@ -373,37 +373,46 @@ def add_to_cart(req, pid):
 
 
 
-# Update cart quantity and adjust the total price accordingly
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from .models import Cart
 
 def update_cart_quantity(request, cart_id, action):
+    # Retrieve the cart item
     cart_item = get_object_or_404(Cart, id=cart_id)
+    
+    # Get the available stock and item price (assuming 'offer_price' is the discounted price)
+    available_stock = cart_item.product.quantity
+    item_price = cart_item.product.offer_price if cart_item.product.offer_price else cart_item.product.price  # Fallback to original price if no offer price
 
-    # Get the price of the product
-    item_price = cart_item.product.offer_price  # Assuming 'product' is a related field on Cart
-
-    # Increase or decrease quantity and update total price
+    # Handle increasing the quantity
     if action == "increase":
-        cart_item.quantity += 1
+        if cart_item.quantity < available_stock:
+            cart_item.quantity += 1  # Increment quantity if within stock
+        else:
+            cart_item.quantity = available_stock  # Set to max available stock
+            messages.warning(request, f"Only {available_stock} items available in stock.")  # Show stock warning message
+
+    # Handle decreasing the quantity
     elif action == "decrease":
         if cart_item.quantity > 1:
             cart_item.quantity -= 1
         else:
-            cart_item.delete()
-            messages.success(request, "Item removed from cart.")
+     # Show message before deletion
+             # Remove the item if quantity is 1 and the decrease action is triggered
             return redirect('view_cart')
 
-    # Update total price based on new quantity
+    # Update the total price based on the new quantity
     cart_item.total_price = cart_item.quantity * float(item_price)
 
     # Save the updated cart item
-    cart_item.save(update_fields=['quantity', 'total_price'])  # Ensure the update is saved
+    cart_item.save(update_fields=['quantity', 'total_price'])
 
+    # Success message after updating the cart
     messages.success(request, f"Updated cart: {cart_item.product.name}, Quantity: {cart_item.quantity}")
-    
-    return redirect(view_cart)
+
+    return redirect('view_cart')  # Redirect back to the cart view page
+
 
 
 
@@ -497,30 +506,46 @@ def user_buy(req, pid):
 
 
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import User, Product, Size, Buy  # Ensure that the correct models are imported
+
 def user_buy1(req, pid):
     # Get the user and product details
     user = User.objects.get(username=req.session['user'])
     product = Product.objects.get(pk=pid)
+    
+    # Get the selected size and quantity from the form
     size_name = req.POST.get('size')  # Get the selected size
+    quantity = int(req.POST.get('quantity'))  # Get the selected quantity and convert to int
+
     size = get_object_or_404(Size, size=size_name)
 
-    # Check if the product is in stock
-    if product.quantity > 0:
-        # Deduct 1 from the stock
-        product.quantity -= 1
+    # Check if the requested quantity is available in stock
+    if product.quantity >= quantity:
+        # Deduct the selected quantity from the stock
+        product.quantity -= quantity
         product.save()
 
         # Proceed to create the purchase record
-        price = product.offer_price
-        buy = Buy.objects.create(user=user, product=product, price=price, size=size)
+        price = product.offer_price * quantity  # Calculate the total price based on quantity
+        buy = Buy.objects.create(
+            user=user, 
+            product=product, 
+            price=price, 
+            size=size, 
+            quantity=quantity  # Save the purchased quantity
+        )
         buy.save()
 
-        messages.success(req, 'Product purchased successfully!')
-        return redirect(order_page)
+        # Show success message
+        messages.success(req, f'{quantity} Product(s) purchased successfully!')
+        return redirect('order_page')  # Adjust 'order_page' to your actual URL pattern name
     else:
         # Handle the out-of-stock case
-        messages.error(req, 'Sorry, this product is out of stock.')
-        return redirect(view_cart)
+        messages.error(req, 'Sorry, insufficient stock for the requested quantity.')
+        return redirect('view_cart')  # Adjust 'view_cart' to your actual URL pattern name
+
 
 
 
@@ -767,3 +792,67 @@ def shop_now(request):
             return redirect(user_profile)  # Redirect to profile page if incomplete
     except UserProfile.DoesNotExist:
         return redirect(user_profile)  # Redirect to profile if it doesn't exist
+
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Cart, Product, Size, Buy, Order
+
+def buy_all(request):
+    # Ensure the user is logged in
+    if not request.user.is_authenticated:
+        messages.error(request, "You must be logged in to make a purchase.")
+        return redirect('login')  # Replace with your login URL
+
+    # Get the cart items for the logged-in user
+    cart_items = Cart.objects.filter(user=request.user)
+
+    # Check if the cart is empty
+    if not cart_items.exists():
+        messages.error(request, "Your cart is empty.")
+        return redirect('view_cart')  # Replace with your cart view URL
+
+    # Create an order for the user
+    buy = get_object_or_404(Buy,  user=request.user)
+
+    # Loop through all cart items and process the purchase for each item
+    for item in cart_items:
+        product = item.product
+        quantity = item.quantity
+        size_name = item.size  # Assuming the cart has a size field for each item
+        size = get_object_or_404(Size, size=size_name)
+
+        # Check if the requested quantity is available in stock
+        if product.quantity >= quantity:
+            # Deduct the selected quantity from the stock
+            product.quantity -= quantity
+            product.save()
+
+            # Calculate the price (if offer price exists, use that)
+            price = product.offer_price * quantity if product.offer_price else product.price * quantity
+
+            # Create a 'Buy' record for the purchase
+            Buy.objects.create(
+                user=request.user,
+                product=product,
+                price=price,
+                size=size,
+                quantity=quantity
+            )
+        else:
+            # Handle the case where the stock is insufficient
+            messages.error(request, f"Insufficient stock for {product.name}. Purchase failed.")
+            return redirect('view_cart')  # Redirect back to the cart if stock is not enough
+
+    # Clear the cart after successful purchase
+    cart_items.delete()
+
+    # Provide feedback to the user
+    messages.success(request, "Your order has been placed successfully.")
+
+    # Redirect to the order page (where you can show order summary or confirmation)
+    return redirect(order_page)  # Replace with your actual order page URL

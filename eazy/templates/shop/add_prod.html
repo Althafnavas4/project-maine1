@@ -68,6 +68,11 @@
             border: 1px solid #ccc;
             cursor: pointer;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .size-option input {
+            margin-right: 5px;
         }
         .size-option.selected {
             background-color: #28a745;
@@ -105,31 +110,43 @@
             <label for="sizes">Select Sizes</label>
             <div class="size-selection" id="size-selection">
                 {% for size in all_sizes %}
-                    <div class="size-option" data-size="{{ size.size }}">{{ size.size }}</div>
+                    <div class="size-option">
+                        <input type="checkbox" name="sizes" value="{{ size.size }}" id="size-{{ size.size }}">
+                        <label for="size-{{ size.size }}">{{ size.size }}</label>
+                    </div>
                 {% endfor %}
             </div>
-            <input type="hidden" name="sizes" id="sizes-input">
 
             <button type="submit">Add Product</button>
         </form>
     </div>
 
     <script>
-        // Handle the size selection
+        // Handle checkbox selection
         const sizeSelection = document.getElementById('size-selection');
-        const sizesInput = document.getElementById('sizes-input');
 
-        sizeSelection.addEventListener('click', function(event) {
-            if (event.target.classList.contains('size-option')) {
-                event.target.classList.toggle('selected');
+        sizeSelection.addEventListener('change', function(event) {
+            if (event.target.type === 'checkbox') {
                 updateSizesInput();
             }
         });
 
         function updateSizesInput() {
-            const selectedSizes = Array.from(document.querySelectorAll('.size-option.selected'))
-                .map(option => option.getAttribute('data-size'));
-            sizesInput.value = selectedSizes.join(',');  // Join selected sizes with a comma
+            // Get all selected size options
+            const selectedSizes = Array.from(document.querySelectorAll('input[name="sizes"]:checked'))
+                .map(option => option.value);
+            console.log(selectedSizes); // You can also send this data as needed.
+            
+            // Update the hidden input field with the selected sizes (optional)
+            // If you want to submit the selected sizes as a hidden input:
+            const sizesInput = document.createElement('input');
+            sizesInput.type = 'hidden';
+            sizesInput.name = 'sizes_input';
+            sizesInput.value = selectedSizes.join(','); // Join sizes as a comma-separated string
+            
+            // Append to form for submission
+            const form = document.querySelector('form');
+            form.appendChild(sizesInput);
         }
     </script>
 </body>

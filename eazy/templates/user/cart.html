@@ -35,7 +35,7 @@
 
         h2 {
             text-align: center;
-            color: #007bff;
+            color: #121416;
             margin-bottom: 30px;
             font-size: 2em;
         }
@@ -53,16 +53,8 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .success {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .error {
-            background-color: #dc3545;
-            color: white;
+            background-color: #ff9800; /* Orange background for messages */
+            color: white; /* White text color */
         }
 
         .cancel-btn {
@@ -212,39 +204,42 @@
             margin-top: 50px;
         }
 
-        /* Navbar Styles */
-        .navbar {
-            background-color: #f30000 !important;
+        .buy-all-btn {
+            background-color: #28a745; /* Green background */
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
         }
 
-        .navbar-brand {
-            color: #ffffff !important;
-            font-weight: bold;
+        .buy-all-btn:hover {
+            background-color: #218838; /* Darker green on hover */
         }
 
-        .navbar-nav .nav-link {
-            color: #ffffff !important;
-            font-size: 1.1rem;
+        /* Navbar styling */
+        nav.navbar {
+            background-color: #f30000;
         }
 
-        .navbar-nav .nav-link:hover {
-            color: #f8f8f8 !important;
-            text-decoration: underline;
+        nav.navbar .navbar-brand {
+            color: white;
         }
 
-        .navbar-nav .nav-link.active {
-            color: #f5e1d9 !important;
+        nav.navbar .navbar-nav .nav-link {
+            color: white;
         }
 
-        /* Profile Icon Style */
-        .nav-link i.fas {
-            font-size: 1.3rem; /* Adjust the size of the icon */
-            margin-right: 8px;  /* Space between icon and text */
+        
+
+        .navbar-toggler-icon {
+            background-color: white;
         }
 
-        .nav-link:hover i.fas {
-            color: #f5e1d9; /* Change color on hover */
-        }
     </style>
 </head>
 <body>
@@ -266,7 +261,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'user_booking' %}">Booking</a>
                     </li>
-                    <!-- Profile Icon -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'user_profile' %}">
                             <i class="fas fa-user-circle"></i> Profile
@@ -336,7 +330,13 @@
             </div>
         </div>
         {% endfor %}
-        
+
+        <!-- Buy All Button -->
+        <form method="POST" action="{% url 'buy_all' %}">
+            {% csrf_token %}
+            <button type="submit" class="buy-all-btn">Buy All</button>
+        </form>
+
         <div class="total">
             Total: ${{ total_price }}
         </div>

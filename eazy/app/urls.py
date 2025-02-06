@@ -52,4 +52,5 @@ urlpatterns=[
     path('update-cart/<int:cart_id>/<str:action>/', update_cart_quantity, name='update_cart_quantity'),
     path('clear_all_orders2', views.clear_all_orders2, name='clear_all_orders2'),
     path('shop-now/', views.shop_now, name='shop_now'),
+    path('buy-all/', views.buy_all, name='buy_all'),
 ]
