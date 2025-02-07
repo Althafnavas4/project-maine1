@@ -351,25 +351,57 @@ def view_pro(req, pid):
 
         
 
-
-
 def add_to_cart(req, pid):
     if 'user' in req.session:
         product = get_object_or_404(Product, pk=pid)
-        size_name = req.POST.get('size')
-        size = get_object_or_404(Size, size=size_name)
         user = User.objects.get(username=req.session['user'])
 
-        # Check if the product is already in the cart
-        cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
+        # Get the selected sizes and quantities from the form
+        size_names = req.POST.getlist('size')  # This will get a list of sizes
+        quantity_str = req.POST.get('quantity', '1')  # Default quantity is 1 if not provided
 
-        if not created:
-            cart_item.quantity += 1  # Increment quantity if already in cart
-        cart_item.save()
+        try:
+            quantity = int(quantity_str)
+            if quantity <= 0:
+                raise ValueError("Quantity must be greater than zero.")
+        except ValueError:
+            messages.error(req, 'Invalid quantity value.')
+            return redirect(view_cart)
 
-        messages.success(req, 'Product added to cart successfully.')
+        # Handle multiple sizes
+        for size_name in size_names:
+            if not size_name:  # Check if size_name is empty
+                messages.error(req, "A size was not selected.")
+                return redirect(view_cart)
+
+            # If size_name contains multiple sizes separated by commas, split them into a list
+            size_list = [size.strip() for size in size_name.split(',')]
+
+            for single_size in size_list:
+                # Check if the size exists in the database
+                try:
+                    size = Size.objects.get(size=single_size)
+                except Size.DoesNotExist:
+                    messages.error(req, f"Size '{single_size}' not available.")
+                    return redirect(view_cart)
+
+                # Check if the product with the selected size already exists in the cart
+                cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
+
+                if not created:
+                    # If it already exists, increase the quantity by the specified amount
+                    cart_item.quantity += quantity
+                else:
+                    cart_item.quantity = quantity  # Set the specified quantity for the new cart item
+
+                cart_item.save()
+
+        messages.success(req, f'Product "{product.name}" added to cart successfully.')
         return redirect(view_cart)
+
     return redirect('eazy_login')
+
+
 
 
 
