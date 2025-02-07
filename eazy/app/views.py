@@ -349,59 +349,26 @@ def view_pro(req, pid):
         return render(req, 'user/view_pro.html', {'data': product, 'sizes': product.sizes.all(), 'show_sizes': False})
 
 
+
         
 
 def add_to_cart(req, pid):
     if 'user' in req.session:
         product = get_object_or_404(Product, pk=pid)
+        size_name = req.POST.get('size')
+        size = get_object_or_404(Size, size=size_name)
         user = User.objects.get(username=req.session['user'])
 
-        # Get the selected sizes and quantities from the form
-        size_names = req.POST.getlist('size')  # This will get a list of sizes
-        quantity_str = req.POST.get('quantity', '1')  # Default quantity is 1 if not provided
+        # Check if the product is already in the cart
+        cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
 
-        try:
-            quantity = int(quantity_str)
-            if quantity <= 0:
-                raise ValueError("Quantity must be greater than zero.")
-        except ValueError:
-            messages.error(req, 'Invalid quantity value.')
-            return redirect(view_cart)
+        if not created:
+            cart_item.quantity += 1  # Increment quantity if already in cart
+        cart_item.save()
 
-        # Handle multiple sizes
-        for size_name in size_names:
-            if not size_name:  # Check if size_name is empty
-                messages.error(req, "A size was not selected.")
-                return redirect(view_cart)
-
-            # If size_name contains multiple sizes separated by commas, split them into a list
-            size_list = [size.strip() for size in size_name.split(',')]
-
-            for single_size in size_list:
-                # Check if the size exists in the database
-                try:
-                    size = Size.objects.get(size=single_size)
-                except Size.DoesNotExist:
-                    messages.error(req, f"Size '{single_size}' not available.")
-                    return redirect(view_cart)
-
-                # Check if the product with the selected size already exists in the cart
-                cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
-
-                if not created:
-                    # If it already exists, increase the quantity by the specified amount
-                    cart_item.quantity += quantity
-                else:
-                    cart_item.quantity = quantity  # Set the specified quantity for the new cart item
-
-                cart_item.save()
-
-        messages.success(req, f'Product "{product.name}" added to cart successfully.')
+        messages.success(req, 'Product added to cart successfully.')
         return redirect(view_cart)
-
     return redirect('eazy_login')
-
-
 
 
 
@@ -473,7 +440,6 @@ def delete_cart(request, id):
         return redirect(view_cart)
     else:
         return redirect('eazy_login')
-
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect
@@ -835,39 +801,29 @@ from django.contrib import messages
 from .models import Cart, Product, Size, Buy, Order
 
 def buy_all(request):
-    # Ensure the user is logged in
     if not request.user.is_authenticated:
         messages.error(request, "You must be logged in to make a purchase.")
-        return redirect('login')  # Replace with your login URL
+        return redirect('login')
 
-    # Get the cart items for the logged-in user
     cart_items = Cart.objects.filter(user=request.user)
 
-    # Check if the cart is empty
     if not cart_items.exists():
         messages.error(request, "Your cart is empty.")
-        return redirect('view_cart')  # Replace with your cart view URL
+        return redirect('view_cart')
 
-    # Create an order for the user
-    buy = get_object_or_404(Buy,  user=request.user)
-
-    # Loop through all cart items and process the purchase for each item
     for item in cart_items:
         product = item.product
         quantity = item.quantity
-        size_name = item.size  # Assuming the cart has a size field for each item
+        size_name = item.size
         size = get_object_or_404(Size, size=size_name)
 
-        # Check if the requested quantity is available in stock
         if product.quantity >= quantity:
-            # Deduct the selected quantity from the stock
             product.quantity -= quantity
             product.save()
 
-            # Calculate the price (if offer price exists, use that)
             price = product.offer_price * quantity if product.offer_price else product.price * quantity
 
-            # Create a 'Buy' record for the purchase
+            # Create a new Buy object directly (No need to fetch an existing Buy)
             Buy.objects.create(
                 user=request.user,
                 product=product,
@@ -876,15 +832,10 @@ def buy_all(request):
                 quantity=quantity
             )
         else:
-            # Handle the case where the stock is insufficient
             messages.error(request, f"Insufficient stock for {product.name}. Purchase failed.")
-            return redirect('view_cart')  # Redirect back to the cart if stock is not enough
+            return redirect('view_cart')
 
-    # Clear the cart after successful purchase
     cart_items.delete()
 
-    # Provide feedback to the user
     messages.success(request, "Your order has been placed successfully.")
-
-    # Redirect to the order page (where you can show order summary or confirmation)
-    return redirect(order_page)  # Replace with your actual order page URL
+    return redirect('order_page')  # Update with your actual order page URL

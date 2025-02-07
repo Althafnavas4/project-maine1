@@ -358,40 +358,12 @@
         }
 
         function selectSize(size) {
-            const quantity = parseInt(document.getElementById('quantity').value);
-
-            if (quantity > 1) {
-                if (sizeSelected.includes(size)) {
-                    sizeSelected = sizeSelected.filter(item => item !== size);
-                } else {
-                    if (sizeSelected.length < quantity) {
-                        sizeSelected.push(size);
-                    } else {
-                        sizeSelected.shift();
-                        sizeSelected.push(size);
-                    }
-                }
-
-                document.getElementById('selectedSize').value = sizeSelected.join(',');
-                const buttons = document.querySelectorAll('.size-buttons button');
-                buttons.forEach(button => {
-                    button.classList.remove('selected');
-                });
-
-                sizeSelected.forEach(selectedSize => {
-                    document.querySelector(`[data-size="${selectedSize}"]`).classList.add('selected');
-                });
-            } else {
-                document.getElementById('selectedSize').value = size;
-                sizeSelected = [size];
-                
-                const buttons = document.querySelectorAll('.size-buttons button');
-                buttons.forEach(button => {
-                    button.classList.remove('selected');
-                });
-
-                document.querySelector(`[data-size="${size}"]`).classList.add('selected');
-            }
+            document.getElementById('selectedSize').value = size;
+            const buttons = document.querySelectorAll('.size-buttons button');
+            buttons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            document.querySelector(`[data-size="${size}"]`).classList.add('selected');
         }
     </script>
 </body>
