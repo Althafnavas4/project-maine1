@@ -239,12 +239,14 @@
     </style>
 </head>
 <body>
-    <button class="back-btn" onclick="window.history.back()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="#007600" stroke-width="2"/></svg>
-        Back
-    </button>
+ 
 
     <div class="container">
+
+        <button class="back-btn" onclick="window.history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="#007600" stroke-width="2"/></svg>
+            Back
+        </button>
         <!-- Right Side: Image -->
         <div class="product-image">
             <img src="{{ data.img.url }}" alt="{{ data.name }}">
@@ -311,44 +313,55 @@
     </div>
 
     <script>
-        let sizeSelected = [];
-
+        
+        let selectedSize = "";
+    
         function setFormAction(actionType) {
             const form = document.getElementById('productForm');
-            const sizes = document.getElementById('selectedSize').value.split(',');
-
-            if (sizes.length === 0) {
+            selectedSize = document.getElementById('selectedSize').value;
+    
+            if (!selectedSize) {
                 document.getElementById('errorMessage').style.display = 'block';
                 return;
             }
-
+    
             document.getElementById('errorMessage').style.display = 'none';
-            form.action = `../${actionType}/{{data.pk}}`;
+            form.action = `../${actionType}/{{ data.pk }}`;
             form.submit();
         }
+        function setFormAction(actionType) {
+            const form = document.getElementById('productForm');
+            const isOutOfStock = {{ data.is_out_of_stock|lower }};  
 
+            if (isOutOfStock) {
+                alert("This product is out of stock but added to your cart for later.");
+                form.action = `../add_to_cart/{{ data.pk }}`;
+                form.submit();
+                return;
+            }
+
+            form.action = `../${actionType}/{{ data.pk }}`;
+            form.submit();
+        }
+    
         function updateQuantity(action) {
             const quantityInput = document.getElementById('quantity');
             const offerPriceElement = document.querySelector('.offer-price');
             let quantity = parseInt(quantityInput.value);
             const maxQuantity = {{ data.quantity }};
             let offerPrice = {{ data.offer_price }};
-
+    
             if (action === 'increase' && quantity < maxQuantity) {
                 quantityInput.value = quantity + 1;
             } else if (action === 'decrease' && quantity > 1) {
                 quantityInput.value = quantity - 1;
             }
-
+    
             quantity = parseInt(quantityInput.value);
-
-            if (quantity > 1) {
-                offerPriceElement.textContent = `Offer Price: $${(offerPrice * quantity).toFixed(2)}`;
-            } else {
-                offerPriceElement.textContent = `Offer Price: $${offerPrice.toFixed(2)}`;
-            }
-
-            // Display the stock limit error message
+    
+            offerPriceElement.textContent = `Offer Price: $${(offerPrice * quantity).toFixed(2)}`;
+    
+            // Display error if quantity exceeds stock
             if (quantity > maxQuantity) {
                 document.getElementById('quantityError').style.display = 'block';
                 document.getElementById('quantityError').textContent = `You can only purchase up to ${maxQuantity} items for this product.`;
@@ -356,7 +369,7 @@
                 document.getElementById('quantityError').style.display = 'none';
             }
         }
-
+    
         function selectSize(size) {
             document.getElementById('selectedSize').value = size;
             const buttons = document.querySelectorAll('.size-buttons button');
@@ -366,5 +379,6 @@
             document.querySelector(`[data-size="${size}"]`).classList.add('selected');
         }
     </script>
+    
 </body>
 </html>

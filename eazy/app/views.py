@@ -154,23 +154,32 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 
 
 
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+
 def register(req):
     if req.method == 'POST':
         name = req.POST['name']
         email = req.POST['email']
         password = req.POST['password']
         confirm_password = req.POST['confirm_password']
-        
+
+        # Check if the password is at least 8 characters long
+        if len(password) < 8:
+            messages.warning(req, 'Password must be at least 8 characters long.')
+            return redirect(register)
+
         # Check if the passwords match
         if password != confirm_password:
             messages.warning(req, 'Passwords do not match.')
             return redirect(register)
-        
+
         try:
-            # Create the user if passwords match
+            # Create the user if all conditions are met
             data = User.objects.create_user(first_name=name, email=email, password=password, username=email)
             data.save()
-            
+
             # Success message
             messages.success(req, 'Account created successfully. You can now log in.')
             return redirect(eazy_login)
