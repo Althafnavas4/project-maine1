@@ -313,33 +313,27 @@
     </div>
 
     <script>
-        
         let selectedSize = "";
     
         function setFormAction(actionType) {
             const form = document.getElementById('productForm');
-            selectedSize = document.getElementById('selectedSize').value;
-    
+            const selectedSize = document.getElementById('selectedSize').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
             if (!selectedSize) {
-                document.getElementById('errorMessage').style.display = 'block';
+                errorMessage.style.display = 'block';
                 return;
             }
+            errorMessage.style.display = 'none';
     
-            document.getElementById('errorMessage').style.display = 'none';
-            form.action = `../${actionType}/{{ data.pk }}`;
-            form.submit();
-        }
-        function setFormAction(actionType) {
-            const form = document.getElementById('productForm');
             const isOutOfStock = {{ data.is_out_of_stock|lower }};  
-
             if (isOutOfStock) {
                 alert("This product is out of stock but added to your cart for later.");
                 form.action = `../add_to_cart/{{ data.pk }}`;
                 form.submit();
                 return;
             }
-
+    
             form.action = `../${actionType}/{{ data.pk }}`;
             form.submit();
         }
@@ -362,11 +356,18 @@
             offerPriceElement.textContent = `Offer Price: $${(offerPrice * quantity).toFixed(2)}`;
     
             // Display error if quantity exceeds stock
+            const quantityError = document.getElementById('quantityError');
             if (quantity > maxQuantity) {
-                document.getElementById('quantityError').style.display = 'block';
-                document.getElementById('quantityError').textContent = `You can only purchase up to ${maxQuantity} items for this product.`;
+                quantityError.style.display = 'block';
+                quantityError.textContent = `You can only purchase up to ${maxQuantity} items for this product.`;
             } else {
-                document.getElementById('quantityError').style.display = 'none';
+                quantityError.style.display = 'none';
+            }
+    
+            // Display warning message when only limited stock is available
+            if (quantity >= maxQuantity) {
+                quantityError.style.display = 'block';
+                quantityError.textContent = `Warning: Only ${maxQuantity} items are in stock.`;
             }
         }
     
