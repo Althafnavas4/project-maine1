@@ -169,6 +169,11 @@
             <a href="{% url 'register' %}">REGISTER</a>
             <br>
             <a href="{% url 'password_reset' %}" class="btn-link">Forgot Password?</a>
+
+            <!-- Button linking to the user_home3 view -->
+            <br><br>
+            <a href="{% url 'user_home3' %}" class="btn-dark">Go to Home</a>
+
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">

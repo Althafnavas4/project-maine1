@@ -10,7 +10,7 @@ from .views import (
 
 urlpatterns=[
 
-    path('',views.user_home3),
+    path('', views.user_home3, name='user_home3'),
     path('login', views.eazy_login, name='eazy_login'),
     path('eazy_logout',views.eazy_logout, name='eazy_logout'),
 

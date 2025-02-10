@@ -154,14 +154,13 @@
                         <p class="card-text">{{ product.dis }}</p>
                         <p class="card-text">₹{{ product.price }}</p>
                         <h4 class="card-title text-success">₹{{ product.offer_price }}</h4>
-
                         {% if product.quantity == 0 %}
-                            <p class="out-of-stock">Out of Stock</p>
-                        {% else %}
-                            <div class="product-options">
-                                <input type="number" id="qty-{{ product.pk }}" class="form-control quantity-input" min="1" value="1">
-                            </div>
-                        {% endif %}
+                        <p class="out-of-stock">Out of Stock</p>
+                    {% else %}
+                        <div class="product-options">
+                            <input type="number" id="qty-{{ product.pk }}" class="form-control quantity-input" min="1" value="{{ product.quantity }}">
+                        </div>
+                    {% endif %}
 
                         <!-- Buttons -->
                         <a href="edit/{{ product.pk }}" class="btn btn-primary">Edit</a>
