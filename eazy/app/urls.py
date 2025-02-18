@@ -48,7 +48,7 @@ urlpatterns=[
     path('order_success/',views.order_success, name='order_success'),
     path('profile/', views.user_profile, name='user_profile'),
     path('order/cancel/<int:pid>/', views.cancel_order, name='cancel_order'),
-    path('orders/clear_all/', views.clear_all_orders, name='clear_all_orders'),
+  
     path('update-cart/<int:cart_id>/<str:action>/', update_cart_quantity, name='update_cart_quantity'),
     path('clear_all_orders2', views.clear_all_orders2, name='clear_all_orders2'),
     path('shop-now/', views.shop_now, name='shop_now'),

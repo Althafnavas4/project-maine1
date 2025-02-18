@@ -156,11 +156,21 @@
                         <h4 class="card-title text-success">₹{{ product.offer_price }}</h4>
                         {% if product.quantity == 0 %}
                         <p class="out-of-stock">Out of Stock</p>
-                    {% else %}
+                        {% else %}
                         <div class="product-options">
-                            <input type="number" id="qty-{{ product.pk }}" class="form-control quantity-input" min="1" value="{{ product.quantity }}">
+                            <p class="card-text">Quantity: {{ product.quantity }}</p>  <!-- Displaying the quantity here -->
+                            {% if product.sizes.all %}
+                                <p class="card-text">Sizes:</p>
+                                <ul>
+                                    {% for size in product.sizes.all %}
+                                        <li>{{ size.size }}</li>  <!-- Displaying each size name from Size model -->
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="card-text">Size: Not Available</p>  <!-- In case no sizes are available -->
+                            {% endif %}
                         </div>
-                    {% endif %}
+                        {% endif %}
 
                         <!-- Buttons -->
                         <a href="edit/{{ product.pk }}" class="btn btn-primary">Edit</a>

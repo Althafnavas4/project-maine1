@@ -218,12 +218,7 @@
 
         {% if buy %}
         <!-- Clear All Orders Button -->
-        <div class="clear-all-btn">
-            <form method="POST" action="{% url 'clear_all_orders' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Clear All Orders</button>
-            </form>
-        </div>
+        
 
         <div class="row">
             {% for order in buy %}

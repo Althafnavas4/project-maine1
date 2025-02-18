@@ -743,16 +743,6 @@ def cancel_order(request, pid):
 
 
 
-from django.shortcuts import redirect
-from django.contrib import messages
-
-def clear_all_orders(request):
-    if request.method == "POST":
-        user = request.user
-        Buy.objects.filter(user=user).delete()
-        messages.success(request, "All orders have been cleared successfully.")
-    return redirect(user_booking)
-
 
 
     
