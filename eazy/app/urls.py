@@ -15,7 +15,7 @@ urlpatterns=[
     path('eazy_logout',views.eazy_logout, name='eazy_logout'),
 
     # ----------------admin--------------------
-    path('home_ad',views.home_ad),
+    path('home_ad',views.home_ad, name='home_ad'),
    
     path('add_prod',views.add_prod),
     path('edit/<pid>',views.edit),
@@ -35,12 +35,12 @@ urlpatterns=[
     path('register/', views.register, name='register'),
     path('user_home',views.user_home),
     path('view_pro/<pid>',views.view_pro),
-    path('add_to_cart/<pid>',views.add_to_cart),
+    path('add_to_cart/<pid>',views.add_to_cart, name='add_to_cart'),
     path('view_cart/', views.view_cart, name='view_cart'),
     path('delete-cart/<int:id>',views.delete_cart, name='delete_cart'),
     path('user_buy/<int:pid>/', views.user_buy, name='user_buy'),
 
-    path('user_buy1/<pid>',views.user_buy1),
+    path('user_buy1/<pid>',views.user_buy1, name='user_buy1'),
     path('booking',views.booking, name='booking'),
     path('user_booking',views.user_booking, name='user_booking'),
     path('userprd',views.userprd,  name='userprd'),

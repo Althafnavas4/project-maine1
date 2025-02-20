@@ -3,214 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product</title>
+    <title>ADD PRODUCT</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-
-        form {
+        .size-quantity-container {
             display: flex;
             flex-direction: column;
-        }
-
-        label {
-            font-weight: bold;
             margin-top: 10px;
         }
 
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            padding: 10px;
-            margin: 5px 0 15px;
-            border: 1px solid #ccc;
+        .size-quantity-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .size-quantity-row input {
+            flex: 1;
+            padding: 8px;
             border-radius: 5px;
-            font-size: 14px;
+            border: 1px solid #ccc;
         }
 
-        select {
-            height: 100px;
-        }
-
-        button {
-            background-color: #28a745;
+        .remove-btn {
+            background-color: red;
             color: white;
-            padding: 10px;
             border: none;
+            padding: 6px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #218838;
+        .remove-btn:hover {
+            background-color: darkred;
         }
 
-        .size-selection {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .size-option {
-            background-color: #f4f4f4;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-        }
-
-        .size-option input {
-            margin-right: 5px;
-        }
-
-        .size-option.selected {
-            background-color: #28a745;
-            color: white;
-            border-color: #28a745;
-        }
-
-        /* Back Button */
-        .back-button {
+        .home-button {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
-
-        .back-button a {
-            display: flex;
-            align-items: center;
-            background-color: #ccc;
-            color: #333;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 16px;
-        }
-
-        .back-button a:hover {
-            background-color: #bbb;
-        }
-
-        .back-button i {
-            margin-right: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-                max-width: 100%;
-            }
+            top: 10px;
+            left: 10px;
         }
     </style>
 </head>
-<body>
-    <!-- Back Button -->
-    <div class="back-button">
-        <a href="javascript:history.back()">
-            <i class="fas fa-arrow-left"></i> Back
+<body class="bodybg">
+    <!-- Home Button -->
+    <div class="home-button">
+        <a href="{% url 'home_ad' %}" class="btn btn-secondary">
+            <i class="fas fa-home"></i> Home
         </a>
     </div>
 
-    <div class="container">
-        <h2>Add Product</h2>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <label for="prd_id">Product ID</label>
-            <input type="text" name="prd_id" placeholder="Product ID" required>
+    <div class="form-container">
+        <div>
+            <h4>ADD PRODUCT</h4><br>
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
 
-            <label for="prd_name">Product Name</label>
-            <input type="text" name="prd_name" placeholder="Product Name" required>
+                <div class="mb-2">
+                    <label for="prd_id" class="form-label">Product ID:</label>
+                    <input type="text" class="form-control" name="prd_id" required>
+                </div>
 
-            <label for="prd_price">Price</label>
-            <input type="number" name="prd_price" placeholder="Price" required>
+                <div class="mb-2">
+                    <label for="prd_name" class="form-label">Product Name:</label>
+                    <input type="text" class="form-control" name="prd_name" required>
+                </div>
 
-            <label for="ofr_price">Offer Price</label>
-            <input type="number" name="ofr_price" placeholder="Offer Price" required>
+                <div class="mb-2">
+                    <label for="prd_price" class="form-label">Price:</label>
+                    <input type="number" class="form-control" name="prd_price" required>
+                </div>
 
-            <label for="dis">Description</label>
-            <textarea name="dis" placeholder="Description" required></textarea>
+                <div class="mb-2">
+                    <label for="ofr_price" class="form-label">Offer Price:</label>
+                    <input type="number" class="form-control" name="ofr_price" required>
+                </div>
 
-            <label for="img">Image</label>
-            <input type="file" name="img" required>
+                <div class="mb-2">
+                    <label for="dis" class="form-label">Description:</label>
+                    <textarea class="form-control" name="dis" required></textarea>
+                </div>
 
-            <label for="quantity">Quantity</label>
-            <input type="number" name="quantity" placeholder="Quantity" required>
+                <div class="mb-2">
+                    <label for="img" class="form-label">Product Image:</label>
+                    <input type="file" class="form-control" name="img" required>
+                </div>
 
-            <label for="sizes">Select Sizes</label>
-            <div class="size-selection" id="size-selection">
-                {% for size in all_sizes %}
-                    <div class="size-option">
-                        <input type="checkbox" name="sizes" value="{{ size.size }}" id="size-{{ size.size }}">
-                        <label for="size-{{ size.size }}">{{ size.size }}</label>
+                <!-- Dynamic Size & Quantity Selection -->
+                <div class="mb-2">
+                    <label for="sizes" class="form-label">Sizes & Quantities:</label>
+                    <div id="size-quantity-container" class="size-quantity-container">
+                        {% for size, quantity in size_quantity_list %}
+                        <div class="size-quantity-row">
+                            <input type="text" name="sizes" value="{{ size.size }}" placeholder="Enter Size" required>
+                            <input type="number" name="quantities" placeholder="Quantity" value="{{ quantity }}" required>
+                            <button type="button" class="remove-btn" onclick="removeSizeRow(this)">X</button>
+                        </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
-            </div>
+                </div>
 
-            <button type="submit">Add Product</button>
-        </form>
+                <button type="button" class="btn btn-secondary" onclick="addSizeField()">+ Add Size</button>
+                <button type="submit" class="btn btn-primary">ADD PRODUCT</button>
+            </form>
+        </div>
     </div>
 
     <script>
-        // Handle checkbox selection
-        const sizeSelection = document.getElementById('size-selection');
+        function addSizeField() {
+            var container = document.getElementById("size-quantity-container");
+            var div = document.createElement("div");
+            div.className = "size-quantity-row";
+            div.innerHTML = `
+                <input type="text" name="sizes" placeholder="Enter Size" required> 
+                <input type="number" name="quantities" placeholder="Quantity" required> 
+                <button type="button" class="remove-btn" onclick="removeSizeRow(this)">X</button>`;
+            container.appendChild(div);
+        }
 
-        sizeSelection.addEventListener('change', function(event) {
-            if (event.target.type === 'checkbox') {
-                updateSizesInput();
-            }
-        });
-
-        function updateSizesInput() {
-            // Get all selected size options
-            const selectedSizes = Array.from(document.querySelectorAll('input[name="sizes"]:checked'))
-                .map(option => option.value);
-            console.log(selectedSizes); // You can also send this data as needed.
-
-            // Update the hidden input field with the selected sizes (optional)
-            // If you want to submit the selected sizes as a hidden input:
-            const sizesInput = document.createElement('input');
-            sizesInput.type = 'hidden';
-            sizesInput.name = 'sizes_input';
-            sizesInput.value = selectedSizes.join(','); // Join sizes as a comma-separated string
-            
-            // Append to form for submission
-            const form = document.querySelector('form');
-            form.appendChild(sizesInput);
+        function removeSizeRow(button) {
+            button.parentElement.remove();
         }
     </script>
-
-    <!-- Font Awesome for arrow icon -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 </body>
 </html>
-
-
-
-
-{% comment %} ------------------------- {% endcomment %}

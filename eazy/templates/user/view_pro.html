@@ -5,13 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ data.name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@500&display=swap" rel="stylesheet">
+    
     <style>
-        /* Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f4f4f4;
@@ -20,14 +15,12 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            margin-bottom: 50px; /* Added space at bottom for footer */
         }
 
-        /* Container */
         .container {
             background-color: #fff;
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 30px auto;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
@@ -35,10 +28,8 @@
             flex-wrap: wrap;
             gap: 30px;
             position: relative;
-            overflow: hidden;
         }
 
-        /* Back Button */
         .back-btn {
             position: absolute;
             top: 20px;
@@ -49,60 +40,41 @@
             font-weight: 700;
             color: #111;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            transition: color 0.3s ease;
         }
         .back-btn:hover {
             color: #ff4c00;
         }
-        .back-btn svg {
-            margin-right: 8px;
-            width: 18px;
-            height: 18px;
-        }
 
-        /* Heading */
-        h2 {
-            color: #111;
-            font-size: 36px;
-            font-weight: 600;
-            text-align: left;
-            margin-bottom: 20px;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        /* Price Section */
-        .price, .offer-price {
-            font-size: 22px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 12px;
-        }
-        .offer-price {
-            color: #ff4c00;
-        }
-
-        /* Image */
         .product-image img {
-            max-width: 100%; /* Ensures image scales down for smaller screens */
+            max-width: 100%;
             height: auto;
             margin: 30px 0;
             border-radius: 8px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .product-image img:hover {
-            transform: scale(1.05);
         }
 
-        /* Stock Status */
-        .out-of-stock {
+        .product-details {
+            flex: 1;
+            padding-left: 20px;
+        }
+
+        .price, .offer-price {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .offer-price {
             color: #ff4c00;
+        }
+
+        .out-of-stock {
+            color: red;
             font-size: 18px;
             font-weight: 600;
             margin-top: 15px;
         }
+
         .in-stock {
             color: #28a745;
             font-size: 18px;
@@ -110,27 +82,16 @@
             margin-top: 15px;
         }
 
-        /* Size Section */
         .size-section {
             margin-top: 30px;
-            width: 100%;
-            text-align: left;
-        }
-        .size-section h3 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
         }
 
-        /* Size Buttons */
         .size-buttons {
-            margin-top: 20px;
             display: flex;
-            justify-content: flex-start;
-            gap: 20px;
             flex-wrap: wrap;
+            gap: 10px;
         }
+
         .size-buttons button {
             padding: 12px 20px;
             font-size: 16px;
@@ -139,176 +100,75 @@
             background-color: #f4f4f4;
             color: #333;
             cursor: pointer;
+            transition: background 0.3s;
         }
+
         .size-buttons button.selected {
             background-color: #ff4c00;
             color: white;
             border-color: #ff4c00;
         }
-        .size-buttons button:hover {
-            background-color: #eaeaea;
+
+        .size-buttons button:disabled {
+            background-color: #ddd;
+            color: #666;
+            cursor: not-allowed;
+            border-color: #bbb;
         }
 
-        /* Quantity Section */
-        .quantity-section {
-            margin-top: 40px;
-            width: 100%;
-            text-align: left;
-        }
-        .quantity-section h3 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        /* Quantity Field */
-        .quantity-field {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            gap: 25px;
-            margin-top: 20px;
-        }
-        .quantity-field button {
-            padding: 12px 18px;
-            font-size: 20px;
-            background-color: #f4f4f4;
-            border: 2px solid #ccc;
-            border-radius: 50%;
-            color: #333;
-            cursor: pointer;
-        }
-        .quantity-field button:hover {
-            background-color: #eaeaea;
-        }
-        .quantity-field input {
-            width: 60px;
-            padding: 12px;
-            font-size: 20px;
-            text-align: center;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-        }
-
-        /* Error Message */
-        .error-message {
-            color: #ff0000;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        /* Action Buttons */
         .buttons {
             margin-top: 30px;
             display: flex;
-            justify-content: space-between;
-            width: 100%;
+            gap: 10px;
         }
+
         .buttons button {
-            padding: 18px 30px;
+            padding: 15px;
             font-size: 16px;
             color: white;
             border-radius: 50px;
             border: none;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.3s;
             width: 48%;
         }
+
         .add-to-cart {
             background-color: #ff4c00;
         }
+
         .add-to-cart:hover {
             background-color: #e44e00;
         }
+
         .buy-now {
             background-color: #28a745;
         }
+
         .buy-now:hover {
             background-color: #218838;
         }
 
-        /* Footer */
-        .footer {
-            margin-top: 40px;
+        .error-message {
+            color: red;
             font-size: 14px;
-            color: #aaa;
-            text-align: center;
-            padding: 20px 0;
+            display: none;
         }
-
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            .product-image img {
-                max-width: 100%;
-            }
-            .product-details {
-                width: 100%;
-                padding-left: 0;
-            }
-            .size-buttons button {
-                font-size: 14px;
-                padding: 10px 15px;
-            }
-            .quantity-field input {
-                width: 50px;
-            }
-            .quantity-field button {
-                font-size: 18px;
-                padding: 10px;
-            }
-            .buttons {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .buttons button {
-                width: 100%;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .back-btn {
-                font-size: 18px;
-            }
-            h2 {
-                font-size: 28px;
-            }
-            .price, .offer-price {
-                font-size: 18px;
-            }
-            .size-buttons button {
-                padding: 8px 12px;
-            }
-            .quantity-field input {
-                width: 45px;
-            }
-        }
-
     </style>
 </head>
 <body>
 
     <div class="container">
+        <button class="back-btn" onclick="window.history.back()">⬅ Back</button>
 
-        <button class="back-btn" onclick="window.history.back()">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="#007600" stroke-width="2"/></svg>
-            Back
-        </button>
-        <!-- Right Side: Image -->
         <div class="product-image">
             <img src="{{ data.img.url }}" alt="{{ data.name }}">
         </div>
 
-        <!-- Left Side: Product Details -->
         <div class="product-details">
             <h2>{{ data.name }}</h2>
-            <p class="price"><strong>Price:</strong> ${{ data.price }}</p>
-            <p class="offer-price"><strong>Offer Price:</strong> ${{ data.offer_price }}</p>
+            <p class="price"><strong>Price:</strong> ₹{{ data.price }}</p>
+            <p class="offer-price"><strong>Offer Price:</strong> ₹{{ data.offer_price }}</p>
             <p><strong>Description:</strong> {{ data.dis }}</p>
 
             {% if data.is_out_of_stock %}
@@ -317,121 +177,58 @@
                 <p class="in-stock">In Stock: {{ data.quantity }}</p>
             {% endif %}
 
-            <form method="POST" id="productForm">
+            <form id="productForm" method="POST">
                 {% csrf_token %}
 
-                <!-- Size Section -->
                 <div class="size-section">
                     <h3>Select Size</h3>
-                    <div class="size-buttons" id="sizeButtons">
-                        {% if sizes %}
-                            {% for size in sizes %}
-                                <button type="button" data-size="{{ size.size }}" onclick="selectSize('{{ size.size }}')">{{ size.size }}</button>
-                            {% endfor %}
-                        {% else %}
-                            <p>No sizes available</p>
-                        {% endif %}
+                    <div class="size-buttons">
+                        {% for size, quantity in size_quantity_list %}
+                            <button type="button" data-size="{{ size }}" 
+                                    {% if quantity == 0 %} disabled {% endif %}
+                                    onclick="selectSize(this, '{{ size }}', {{ quantity }})">
+                                {{ size }} {% if quantity == 0 %} (Out of Stock) {% endif %}
+                            </button>
+                        {% endfor %}
                     </div>
+                    <p class="error-message" id="sizeError">Please select a size.</p>
                 </div>
 
-                <!-- Selected Size Display -->
-                <input type="hidden" name="size" id="selectedSize" required>
-
-                <!-- Quantity Section -->
-                <div class="quantity-section">
-                    <h3>Select Quantity</h3>
-                    <div class="quantity-field">
-                        <button type="button" onclick="updateQuantity('decrease')">-</button>
-                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ data.quantity }}" required>
-                        <button type="button" onclick="updateQuantity('increase')">+</button>
-                    </div>
-                    <!-- Error Message for Exceeding Quantity -->
-                    <div id="quantityError" class="error-message" style="display: none;"></div>
-                </div>
-
-                <!-- Error Message -->
-                <div id="errorMessage" class="error-message" style="display: none;">Please select a size before proceeding.</div>
+                <input type="hidden" name="size" id="selectedSize">
 
                 <div class="buttons">
-                    <button type="button" class="add-to-cart" onclick="setFormAction('add_to_cart')">Add to Cart</button>
-                    <button type="button" class="buy-now" onclick="setFormAction('user_buy1')">Buy Now</button>
+                    <button type="submit" class="add-to-cart" formaction="{% url 'add_to_cart' data.pk %}" disabled> Add to Cart </button>
+                    <button type="submit" class="buy-now" formaction="{% url 'user_buy1' data.pk %}" disabled> Buy Now </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="footer">
-        &copy; {{ current_year }} EAZY. All rights reserved.
-    </div>
-
     <script>
-        let selectedSize = "";
-    
-        function setFormAction(actionType) {
-            const form = document.getElementById('productForm');
-            const selectedSize = document.getElementById('selectedSize').value;
-            const errorMessage = document.getElementById('errorMessage');
-            
-            if (!selectedSize) {
-                errorMessage.style.display = 'block';
+        function selectSize(button, size, quantity) {
+            // Prevent selecting disabled sizes
+            if (quantity === 0) {
                 return;
             }
-            errorMessage.style.display = 'none';
-    
-            const isOutOfStock = {{ data.is_out_of_stock|lower }};  
-            if (isOutOfStock) {
-                alert("This product is out of stock but added to your cart for later.");
-                form.action = `../add_to_cart/{{ data.pk }}`;
-                form.submit();
-                return;
-            }
-    
-            form.action = `../${actionType}/{{ data.pk }}`;
-            form.submit();
-        }
-    
-        function updateQuantity(action) {
-            const quantityInput = document.getElementById('quantity');
-            const offerPriceElement = document.querySelector('.offer-price');
-            let quantity = parseInt(quantityInput.value);
-            const maxQuantity = {{ data.quantity }};
-            let offerPrice = {{ data.offer_price }};
-    
-            if (action === 'increase' && quantity < maxQuantity) {
-                quantityInput.value = quantity + 1;
-            } else if (action === 'decrease' && quantity > 1) {
-                quantityInput.value = quantity - 1;
-            }
-    
-            quantity = parseInt(quantityInput.value);
-    
-            offerPriceElement.textContent = `Offer Price: $${(offerPrice * quantity).toFixed(2)}`;
-    
-            // Display error if quantity exceeds stock
-            const quantityError = document.getElementById('quantityError');
-            if (quantity > maxQuantity) {
-                quantityError.style.display = 'block';
-                quantityError.textContent = `You can only purchase up to ${maxQuantity} items for this product.`;
-            } else {
-                quantityError.style.display = 'none';
-            }
-    
-            // Display warning message when only limited stock is available
-            if (quantity >= maxQuantity) {
-                quantityError.style.display = 'block';
-                quantityError.textContent = `Warning: Only ${maxQuantity} items are in stock.`;
-            }
-        }
-    
-        function selectSize(size) {
+
+            document.querySelectorAll('.size-buttons button').forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
             document.getElementById('selectedSize').value = size;
-            const buttons = document.querySelectorAll('.size-buttons button');
-            buttons.forEach(button => {
-                button.classList.remove('selected');
-            });
-            document.querySelector(`[data-size="${size}"]`).classList.add('selected');
+            document.getElementById('sizeError').style.display = "none";
+
+            // Enable buttons after selecting a size
+            document.querySelector('.add-to-cart').disabled = false;
+            document.querySelector('.buy-now').disabled = false;
         }
+
+        document.getElementById("productForm").addEventListener("submit", function(event) {
+            let selectedSize = document.getElementById("selectedSize").value;
+            if (!selectedSize) {
+                document.getElementById("sizeError").style.display = "block";
+                event.preventDefault();
+            }
+        });
     </script>
-    
+
 </body>
 </html>

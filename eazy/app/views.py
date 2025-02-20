@@ -195,12 +195,30 @@ def register(req):
 
       
     
+from django.shortcuts import render, redirect
+from .models import Product, ProductSize
+
 def home_ad(req):
     if 'eazy' in req.session:
-        data=Product.objects.all()
-        return render(req,'shop/home.html',{'data':data})
+        data = Product.objects.all()
+
+        # Create a list of tuples (product, size, quantity)
+        product_size_list = []
+
+        for product in data:
+            product_sizes = ProductSize.objects.filter(product=product, quantity__gt=0)  # Only sizes with stock
+            for ps in product_sizes:
+                product_size_list.append((product, ps.size.size, ps.quantity))  # Store only available sizes
+
+        return render(req, 'shop/home.html', {
+            'data': data,
+            'product_size_list': product_size_list  # Send as a list
+        })
     else:
         return redirect(eazy_login)
+
+
+
     
 def eazy_logout(req):
     req.session.flush()          #delete session
@@ -209,6 +227,9 @@ def eazy_logout(req):
 
 
 
+
+from django.shortcuts import render, redirect
+from .models import Product, Size, ProductSize
 
 def add_prod(req):
     if 'eazy' in req.session:
@@ -219,9 +240,13 @@ def add_prod(req):
             ofr_price = req.POST['ofr_price']
             dis = req.POST['dis']
             img = req.FILES['img']
-            sizes = req.POST.getlist('sizes')
-            quantity = int(req.POST['quantity'])  # Fetch quantity from form
 
+            sizes = req.POST.getlist('sizes')  # List of selected sizes
+            quantities = req.POST.getlist('quantities')  # List of corresponding quantities
+
+            total_quantity = sum(map(int, quantities))  # Sum of all size-based stock
+
+            # Create product
             product = Product.objects.create(
                 pro_id=prd_id,
                 name=prd_name,
@@ -229,61 +254,84 @@ def add_prod(req):
                 offer_price=ofr_price,
                 img=img,
                 dis=dis,
-                quantity=quantity  # Add quantity to the product
+                quantity=total_quantity
             )
 
-            for size in sizes:
-                size_obj, created = Size.objects.get_or_create(size=size)
-                product.sizes.add(size_obj)
+            # Assign sizes and track quantity per size using ProductSize
+            for size, qty in zip(sizes, quantities):
+                size_obj, _ = Size.objects.get_or_create(size=size)
+                ProductSize.objects.create(product=product, size=size_obj, quantity=int(qty))  # Store quantity per size
 
             return redirect(add_prod)
         else:
             all_sizes = Size.objects.all()
-            return render(req, 'shop/add_prod.html', {'all_sizes': all_sizes})
+
+            # Initialize size-quantity list with default quantity 0
+            size_quantity_list = [(size, 0) for size in all_sizes]
+
+            return render(req, 'shop/add_prod.html', {
+                'size_quantity_list': size_quantity_list
+            })
     else:
         return redirect(eazy_login)
 
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product, Size, ProductSize
+
 def edit(req, pid):
     if 'eazy' in req.session:
-        if req.method == 'POST':
-            prd_id = req.POST['prd_id']
-            prd_name = req.POST['prd_name']
-            prd_price = req.POST['prd_price']
-            ofr_price = req.POST['ofr_price']
-            dis = req.POST['dis']
-            sizes = req.POST.getlist('sizes')  # Retrieve selected sizes
-            img = req.FILES.get('img')  # Get the new image if uploaded
-            quantity = req.POST['quantity']  # Retrieve quantity
+        product = get_object_or_404(Product, pk=pid)
 
-            # Fetch the product to edit
-            product = get_object_or_404(Product, pk=pid)
+        if req.method == 'POST':
+            prd_name = req.POST.get('prd_name', product.name)
+            prd_price = req.POST.get('prd_price', product.price)
+            ofr_price = req.POST.get('ofr_price', product.offer_price)
+            dis = req.POST.get('dis', product.dis)
+            img = req.FILES.get('img')
+
+            sizes = req.POST.getlist('sizes')  # List of selected sizes
+            quantities = req.POST.getlist('quantities')  # List of corresponding quantities
 
             # Update product fields
-            product.pro_id = prd_id
             product.name = prd_name
             product.price = prd_price
             product.offer_price = ofr_price
             product.dis = dis
-            product.quantity = quantity  # Update quantity
 
-            # Update image if a new one is uploaded
             if img:
                 product.img = img
 
-            # Update sizes
-            product.sizes.clear()  # Clear existing sizes
-            for size in sizes:
-                size_obj, _ = Size.objects.get_or_create(size=size)
-                product.sizes.add(size_obj)
+            # Clear old size-quantity relationships
+            ProductSize.objects.filter(product=product).delete()
+            total_quantity = 0  # Track total stock
 
-            product.save()  # Save all changes
+            for size, qty in zip(sizes, quantities):
+                size_obj, _ = Size.objects.get_or_create(size=size)
+                ProductSize.objects.create(product=product, size=size_obj, quantity=int(qty))  # Store quantity per size
+                total_quantity += int(qty)
+
+            product.quantity = total_quantity  # Update total stock
+            product.save()
+
             return redirect(home_ad)
+
         else:
-            all_sizes = Size.objects.all()  # Fetch all available sizes
-            product = get_object_or_404(Product, pk=pid)  # Fetch the product to edit
-            return render(req, 'shop/edit.html', {'product': product, 'all_sizes': all_sizes})
+            all_sizes = Size.objects.all()
+
+            # Fetch existing size quantities correctly
+            size_quantity_list = [(ps.size.size, ps.quantity) for ps in ProductSize.objects.filter(product=product)]
+
+            return render(req, 'shop/edit.html', {
+                'product': product,
+                'all_sizes': all_sizes,
+                'size_quantity_list': size_quantity_list
+            })
     else:
         return redirect(eazy_login)
+
+
+
 
 
 def delete(req,pid):
@@ -350,21 +398,33 @@ def user_home(req):
     else:
         return redirect(eazy_login)
     
+from django.shortcuts import render, get_object_or_404
+from .models import Product, ProductSize  # Ensure ProductSize is imported
+
 def view_pro(req, pid):
     product = get_object_or_404(Product, pk=pid)
-    if 'user' in req.session:
-        return render(req, 'user/view_pro.html', {'data': product, 'sizes': product.sizes.all(), 'show_sizes': True})
-    else:
-        return render(req, 'user/view_pro.html', {'data': product, 'sizes': product.sizes.all(), 'show_sizes': False})
+    
+    # Fetch all sizes with their respective quantities for this product
+    product_size_list = ProductSize.objects.filter(product=product)
 
+    # Convert ProductSize objects into a list of tuples (size, quantity)
+    size_quantity_list = [(ps.size.size, ps.quantity) for ps in product_size_list]
 
-
-        
+    return render(req, 'user/view_pro.html', {
+        'data': product,
+        'size_quantity_list': size_quantity_list,  # Send the size list
+        'show_sizes': 'user' in req.session  # Check user session
+    })
 
 def add_to_cart(req, pid):
     if 'user' in req.session:
         product = get_object_or_404(Product, pk=pid)
         size_name = req.POST.get('size')
+
+        if not size_name:
+            messages.error(req, "Please select a size.")
+            return redirect('view_pro', pid=pid)
+
         size = get_object_or_404(Size, size=size_name)
         user = User.objects.get(username=req.session['user'])
 
@@ -372,55 +432,67 @@ def add_to_cart(req, pid):
         cart_item, created = Cart.objects.get_or_create(user=user, product=product, size=size)
 
         if not created:
-            cart_item.quantity += 1  # Increment quantity if already in cart
+            if cart_item.quantity < product.quantity:  # Ensure stock is available
+                cart_item.quantity += 1
+            else:
+                messages.error(req, "Not enough stock available.")
+                return redirect('view_pro', pid=pid)
+
         cart_item.save()
 
         messages.success(req, 'Product added to cart successfully.')
-        return redirect(view_cart)
+        return redirect('view_cart')
     return redirect('eazy_login')
 
 
 
+
+from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from .models import Cart
+from .models import Cart, ProductSize
 
 def update_cart_quantity(request, cart_id, action):
     # Retrieve the cart item
     cart_item = get_object_or_404(Cart, id=cart_id)
     
-    # Get the available stock and item price (assuming 'offer_price' is the discounted price)
-    available_stock = cart_item.product.quantity
-    item_price = cart_item.product.offer_price if cart_item.product.offer_price else cart_item.product.price  # Fallback to original price if no offer price
+    size = cart_item.size  # Size of the product in the cart
+    product = cart_item.product
+
+    # Fetch the stock for this size
+    product_size = ProductSize.objects.filter(product=product, size=size).first()
+    
+    if not product_size:
+        messages.error(request, f"Size {size.size} is unavailable.")
+        return redirect('view_cart')
+
+    available_stock = product_size.quantity  # Available stock for this size
+    item_price = product.offer_price if product.offer_price else product.price  # Use offer price if available
 
     # Handle increasing the quantity
     if action == "increase":
         if cart_item.quantity < available_stock:
-            cart_item.quantity += 1  # Increment quantity if within stock
+            cart_item.quantity = F('quantity') + 1  # Increase quantity
         else:
-            cart_item.quantity = available_stock  # Set to max available stock
-            messages.warning(request, f"Only {available_stock} items available in stock.")  # Show stock warning message
-
+            messages.warning(request, f"Only {available_stock} items available in stock.")
+    
     # Handle decreasing the quantity
     elif action == "decrease":
         if cart_item.quantity > 1:
-            cart_item.quantity -= 1
+            cart_item.quantity = F('quantity') - 1  # Decrease quantity
         else:
-     # Show message before deletion
-             # Remove the item if quantity is 1 and the decrease action is triggered
+            cart_item.delete()  # Remove item from cart
+            messages.success(request, f"Removed {cart_item.product.name} from cart.")
             return redirect('view_cart')
 
-    # Update the total price based on the new quantity
-    cart_item.total_price = cart_item.quantity * float(item_price)
+    # Update total price based on the new quantity
+    cart_item.total_price = F('quantity') * item_price
 
-    # Save the updated cart item
+    # Save updates
     cart_item.save(update_fields=['quantity', 'total_price'])
 
-    # Success message after updating the cart
     messages.success(request, f"Updated cart: {cart_item.product.name}, Quantity: {cart_item.quantity}")
-
-    return redirect('view_cart')  # Redirect back to the cart view page
-
+    return redirect('view_cart')  # Redirect back to cart view page
 
 
 
@@ -449,109 +521,101 @@ def delete_cart(request, id):
         return redirect(view_cart)
     else:
         return redirect('eazy_login')
+
+
+
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from .models import User, Cart, Product, Size, Buy
+from .models import User, Cart, Product, Size, ProductSize, Buy
 
 def user_buy(req, pid):
     user = get_object_or_404(User, username=req.session.get('user'))
     
-    # Fetch the updated cart item
+    # Fetch the cart item
     cart = get_object_or_404(Cart, pk=pid)
-    
     size_name = req.POST.get('size')
+
+    if not size_name:
+        messages.error(req, "Please select a size.")
+        return redirect('view_cart')
+
     size = get_object_or_404(Size, size=size_name)
     product = cart.product
     quantity_to_buy = cart.quantity
     total_price = cart.total_price  
 
     with transaction.atomic():
-        # Lock the product row to prevent race conditions
-        product = Product.objects.select_for_update().get(pk=product.pk)
+        # Lock the specific size stock for the product
+        product_size = ProductSize.objects.select_for_update().filter(product=product, size=size).first()
 
-        if product.quantity < quantity_to_buy:
-            messages.error(req, 'Sorry, this product is out of stock.')
+        if not product_size or product_size.quantity < quantity_to_buy:
+            messages.error(req, f'Sorry, size {size.size} is out of stock.')
             return redirect('view_cart')
 
-        # Reduce stock
-        product.quantity = F('quantity') - quantity_to_buy
+        # Reduce stock for the selected size atomically
+        ProductSize.objects.filter(product=product, size=size).update(quantity=F('quantity') - quantity_to_buy)
+
+        # Update total product stock after purchase
+        total_stock = ProductSize.objects.filter(product=product).aggregate(total=Sum('quantity'))['total'] or 0
+        product.quantity = total_stock
         product.save(update_fields=['quantity'])
 
-        # Filter all existing Buy entries for this user, product, and size
-        existing_buy_entries = Buy.objects.filter(
-            user=user,
-            product=product,
-            size=size
+        # Update existing Buy entry or create a new one
+        buy_entry, created = Buy.objects.get_or_create(
+            user=user, product=product, size=size,
+            defaults={'quantity': quantity_to_buy, 'price': total_price}
         )
 
-        if existing_buy_entries.exists():
-            # If Buy entries exist, update their quantity and price
-            for entry in existing_buy_entries:
-                entry.quantity += quantity_to_buy  # Add quantity
-                entry.price += total_price  # Add total price
-                entry.save(update_fields=['quantity', 'price'])
-        else:
-            # If no Buy entries exist, create a new one
-            Buy.objects.create(
-                user=user,
-                product=product,
-                price=total_price,
-                size=size,
-                quantity=quantity_to_buy
+        if not created:
+            Buy.objects.filter(pk=buy_entry.pk).update(
+                quantity=F('quantity') + quantity_to_buy,
+                price=F('price') + total_price
             )
 
         # Remove the cart item after successful purchase
         cart.delete()
 
-    messages.success(req, f'Product "{product.name}" purchased successfully!')
+    messages.success(req, f'Product "{product.name}" (Size {size.size}) purchased successfully!')
     return redirect('order_page')
 
 
 
 
-
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from .models import User, Product, Size, Buy  # Ensure that the correct models are imported
+from django.db.models import Sum
 
 def user_buy1(req, pid):
-    # Get the user and product details
     user = User.objects.get(username=req.session['user'])
-    product = Product.objects.get(pk=pid)
+    product = get_object_or_404(Product, pk=pid)
     
-    # Get the selected size and quantity from the form
-    size_name = req.POST.get('size')  # Get the selected size
-    quantity = int(req.POST.get('quantity'))  # Get the selected quantity and convert to int
+    size_name = req.POST.get('size')
+    quantity = int(req.POST.get('quantity', 1))
+
+    if not size_name:
+        messages.error(req, "Please select a size.")
+        return redirect('view_pro', pid=pid)
 
     size = get_object_or_404(Size, size=size_name)
+    product_size = get_object_or_404(ProductSize, product=product, size=size)
 
-    # Check if the requested quantity is available in stock
-    if product.quantity >= quantity:
-        # Deduct the selected quantity from the stock
-        product.quantity -= quantity
+    if product_size.quantity >= quantity:
+        product_size.quantity -= quantity
+        product_size.save()
+
+        # Update total product stock
+        product.quantity = ProductSize.objects.filter(product=product).aggregate(total=Sum('quantity'))['total'] or 0
         product.save()
 
-        # Proceed to create the purchase record
-        price = product.offer_price * quantity  # Calculate the total price based on quantity
-        buy = Buy.objects.create(
-            user=user, 
-            product=product, 
-            price=price, 
-            size=size, 
-            quantity=quantity  # Save the purchased quantity
-        )
-        buy.save()
+        price = product.offer_price * quantity
+        Buy.objects.create(user=user, product=product, price=price, size=size, quantity=quantity)
 
-        # Show success message
         messages.success(req, f'{quantity} Product(s) purchased successfully!')
-        return redirect('order_page')  # Adjust 'order_page' to your actual URL pattern name
+        return redirect('order_page')
     else:
-        # Handle the out-of-stock case
-        messages.error(req, 'Sorry, insufficient stock for the requested quantity.')
-        return redirect('view_cart')  # Adjust 'view_cart' to your actual URL pattern name
+        messages.error(req, 'Insufficient stock for the selected size.')
+        return redirect(view_pro, pid=pid)
+
 
 
 
@@ -794,10 +858,11 @@ def shop_now(request):
 
 
 
-
+from django.db import transaction
+from django.db.models import F, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Cart, Product, Size, Buy, Order
+from .models import Cart, Product, Size, Buy, ProductSize
 
 def buy_all(request):
     if not request.user.is_authenticated:
@@ -810,31 +875,46 @@ def buy_all(request):
         messages.error(request, "Your cart is empty.")
         return redirect('view_cart')
 
-    for item in cart_items:
-        product = item.product
-        quantity = item.quantity
-        size_name = item.size
-        size = get_object_or_404(Size, size=size_name)
+    with transaction.atomic():
+        for item in cart_items:
+            product = item.product
+            quantity = item.quantity
+            size_name = item.size
 
-        if product.quantity >= quantity:
-            product.quantity -= quantity
-            product.save()
+            size = get_object_or_404(Size, size=size_name)
+            product_size = ProductSize.objects.select_for_update().filter(product=product, size=size).first()
+
+            if not product_size or product_size.quantity < quantity:
+                messages.error(request, f"Insufficient stock for {product.name} (Size {size.size}). Purchase failed.")
+                return redirect('view_cart')
+
+            # Deduct size-specific stock atomically
+            ProductSize.objects.filter(product=product, size=size).update(quantity=F('quantity') - quantity)
+
+            # Update total product stock
+            total_stock = ProductSize.objects.filter(product=product).aggregate(total=Sum('quantity'))['total'] or 0
+            product.quantity = total_stock
+            product.save(update_fields=['quantity'])
 
             price = product.offer_price * quantity if product.offer_price else product.price * quantity
 
-            # Create a new Buy object directly (No need to fetch an existing Buy)
-            Buy.objects.create(
-                user=request.user,
-                product=product,
-                price=price,
-                size=size,
-                quantity=quantity
+            # Update existing Buy entry or create a new one
+            buy_entry, created = Buy.objects.get_or_create(
+                user=request.user, product=product, size=size,
+                defaults={'quantity': quantity, 'price': price}
             )
-        else:
-            messages.error(request, f"Insufficient stock for {product.name}. Purchase failed.")
-            return redirect('view_cart')
 
-    cart_items.delete()
+            if not created:
+                Buy.objects.filter(pk=buy_entry.pk).update(
+                    quantity=F('quantity') + quantity,
+                    price=F('price') + price
+                )
+
+        # Clear cart after successful purchase
+        cart_items.delete()
 
     messages.success(request, "Your order has been placed successfully.")
     return redirect('order_page')  # Update with your actual order page URL
+
+
+
