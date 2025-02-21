@@ -349,32 +349,63 @@ from .models import Buy, Order
 
 def booking(req):
     if req.method == "POST":
-        # Process status updates from the admin page
         for key, value in req.POST.items():
-            if key.startswith('status_'):  # Look for status fields
-                buy_id = key.split('_')[1]  # Extract the Buy ID from the key
+            if key.startswith('status_'):
+                buy_id = key.split('_')[1]
                 try:
                     buy = Buy.objects.get(id=buy_id)
-                    old_status = buy.status  # Capture the previous status
-                    if old_status != value:  # Only update if the status is different
-                        buy.status = value  # Update the status field
-                        buy.save()  # Save the changes
-                        messages.success(req, f"Order {buy_id} status updated from {old_status} to {value}.")
+                    if buy.status != value:
+                        buy.status = value
+                        buy.save()
+                        messages.success(req, f"Order {buy_id} status updated to {value}.")
                     else:
                         messages.info(req, f"Order {buy_id} status is already {value}.")
                 except Buy.DoesNotExist:
                     messages.error(req, f"Order {buy_id} not found.")
+        return redirect('booking')
+
+    # Fetch Buy objects and their associated Orders
+    buys = Buy.objects.all().order_by('-date')
+    combined_data = []
+
+    for buy in buys:
+        order = Order.objects.filter(buy=buy).first()  # Get the correct order linked to this Buy
         
-        return redirect('booking')  # Redirect to refresh the admin page
+        # Ensure there's always an order linked to Buy
+        if not order:
+            order = Order.objects.create(
+                buy=buy,
+                customer_name=buy.user.username,
+                phone_number=buy.user.userprofile.phone_number if hasattr(buy.user, 'userprofile') else "N/A",
+                email=buy.user.email if buy.user.email else "N/A",
+                address=buy.user.userprofile.address if hasattr(buy.user, 'userprofile') else "N/A",
+            )
 
-    # Display all orders and buys
-    buys = Buy.objects.all().order_by('-date')  # Adjust to sort by the appropriate field
-    orders = Order.objects.all().order_by('-created_at')  # Adjust to sort by the appropriate field
+        combined_data.append({'buy': buy, 'order': order})
 
-    combined_data = zip(buys, orders)
+    return render(req, 'shop/booking.html', {'combined_data': combined_data})
 
-    return render(req, 'shop/booking.html', {'combined_data': combined_data, 'buys': buys, 'orders': orders})
 
+def create_order(request, buy_id):
+    buy = Buy.objects.get(id=buy_id)
+
+    # First, check if an Order already exists
+    order = Order.objects.filter(buy=buy).first()
+
+    if order:
+        messages.info(request, f"An order already exists for {buy.product.name}. No duplicate created.")
+    else:
+        # Create new Order only if none exists
+        order = Order.objects.create(
+            buy=buy,
+            customer_name=buy.user.username,
+            phone_number=buy.user.userprofile.phone_number if hasattr(buy.user, 'userprofile') else "",
+            email=buy.user.email,
+            address=buy.user.userprofile.address if hasattr(buy.user, 'userprofile') else "",
+        )
+        messages.success(request, f"Order for {buy.product.name} created successfully!")
+
+    return redirect('booking')
 
 
 

@@ -172,46 +172,39 @@
                         </tr>
                     </thead>
                     <tbody id="ordersTable">
-                        {% for buy, order in combined_data %}
-                        <tr
-                            class="{% if buy.status == 'Canceled' %}canceled-row{% elif buy.status == 'Pending' %}pending-row{% elif buy.status == 'Shipped' %}shipped-row{% endif %}">
+                        {% for entry in combined_data %}
+                        <tr class="{% if entry.buy.status == 'Canceled' %}canceled-row{% elif entry.buy.status == 'Pending' %}pending-row{% elif entry.buy.status == 'Shipped' %}shipped-row{% endif %}">
                             <th>{{ forloop.counter }}</th>
-                            <td>{{ buy.id }}</td>
-                            <td>{{ order.customer_name }}</td>
-                            <td>{{ order.phone_number }}</td>
-                            <td>{{ order.email }}</td>
-                            <td>{{ order.address }}</td>
-                            <td>{{ buy.product.name }}</td>
-                            <td>${{ buy.price }}</td>
-                            <td>{{ buy.size }}</td>
-                            <td>{{ buy.quantity }}</td> <!-- Display Quantity -->
+                            <td>{{ entry.buy.id }}</td>
+                            <td>{{ entry.order.customer_name|default:"N/A" }}</td>
+                            <td>{{ entry.order.phone_number|default:"N/A" }}</td>
+                            <td>{{ entry.order.email|default:"N/A" }}</td>
+                            <td>{{ entry.order.address|default:"N/A" }}</td>
+
+                            <td>{{ entry.buy.product.name }}</td>
+                            <td>${{ entry.buy.price }}</td>
+                            <td>{{ entry.buy.size }}</td>
+                            <td>{{ entry.buy.quantity }}</td>
                             <td>
-                                <img src="{{ buy.product.img.url }}" alt="{{ buy.product.name }}" class="img-thumbnail"
-                                    style="height: 100px; width: auto;">
+                                <img src="{{ entry.buy.product.img.url }}" alt="{{ entry.buy.product.name }}" class="img-thumbnail" style="height: 100px; width: auto;">
                             </td>
-                            <td>{{ buy.date }}</td>
+                            <td>{{ entry.buy.date }}</td>
                             <td>
-                                <p>Status: {{ buy.status }}</p>
-                                <select name="status_{{ buy.id }}" class="form-select">
-                                    <option value="Pending" {% if buy.status == 'Pending' %}selected{% endif %}>Pending
-                                    </option>
-                                    <option value="Shipped" {% if buy.status == 'Shipped' %}selected{% endif %}>Shipped
-                                    </option>
-                                    <option value="Delivered" {% if buy.status == 'Delivered' %}selected{% endif %}>
-                                        Delivered
-                                    </option>
-                                    <option value="Canceled" {% if buy.status == 'Canceled' %}selected{% endif %}>
-                                        Canceled
-                                    </option>
+                                <p>Status: {{ entry.buy.status }}</p>
+                                <select name="status_{{ entry.buy.id }}" class="form-select">
+                                    <option value="Pending" {% if entry.buy.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Shipped" {% if entry.buy.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                                    <option value="Delivered" {% if entry.buy.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                    <option value="Canceled" {% if entry.buy.status == 'Canceled' %}selected{% endif %}>Canceled</option>
                                 </select>
                             </td>
                             <td>
-                                <button type="submit" name="update" value="{{ buy.id }}" class="btn btn-primary">Update
-                                </button>
+                                <button type="submit" name="update" value="{{ entry.buy.id }}" class="btn btn-primary">Update</button>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
+                    
                 </table>
             </div>
         </form>

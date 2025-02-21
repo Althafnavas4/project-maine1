@@ -53,4 +53,5 @@ urlpatterns=[
     path('clear_all_orders2', views.clear_all_orders2, name='clear_all_orders2'),
     path('shop-now/', views.shop_now, name='shop_now'),
     path('buy-all/', views.buy_all, name='buy_all'),
+    path('create-order/<int:buy_id>/', views.create_order, name='create_order'),
 ]

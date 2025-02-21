@@ -86,6 +86,7 @@ class Buy(models.Model):
 from django.db import models
 
 class Order(models.Model):
+    buy = models.OneToOneField(Buy, on_delete=models.SET_NULL, null=True, blank=True)  # # Link Order to Buy
     customer_name = models.CharField(max_length=100)
 
     phone_number = models.CharField(max_length=15, blank=True, null=True)  # Allows null values
