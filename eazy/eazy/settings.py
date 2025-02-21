@@ -150,7 +150,7 @@ env = environ.Env()
 environ.Env.read_env()
 
 
-RAZORPAY_KEY_ID = "rzp_test_lmIyDJ6yTRULxB"
-RAZORPAY_KEY_SECRET = "fQny0pbQynY9imcPtj5C2jbr"
+RAZORPAY_KEY_ID = ""
+RAZORPAY_KEY_SECRET = ""
 # In settings.py
-RAZORPAY_MODE = "TEST"  # or "LIVE" when you want to test UPI Payment Links in production
+RAZORPAY_MODE = "LIVE"  # or "LIVE" when you want to test UPI Payment Links in production
