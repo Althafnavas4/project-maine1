@@ -153,4 +153,4 @@ environ.Env.read_env()
 RAZORPAY_KEY_ID = ""
 RAZORPAY_KEY_SECRET = ""
 # In settings.py
-RAZORPAY_MODE = "LIVE"  # or "LIVE" when you want to test UPI Payment Links in production
+RAZORPAY_MODE = "TEST"  # or "LIVE" when you want to test UPI Payment Links in production
