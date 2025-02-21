@@ -144,7 +144,13 @@ DEFAULT_FROM_EMAIL = 'Your App <your-email@example.com>'
 
 
 
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 
-RAZORPAY_KEY_ID = "your_razorpay_key_id"
-RAZORPAY_KEY_SECRET = "your_razorpay_secret_key"
+RAZORPAY_KEY_ID = "rzp_test_lmIyDJ6yTRULxB"
+RAZORPAY_KEY_SECRET = "fQny0pbQynY9imcPtj5C2jbr"
+# In settings.py
+RAZORPAY_MODE = "TEST"  # or "LIVE" when you want to test UPI Payment Links in production

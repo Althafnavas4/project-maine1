@@ -74,7 +74,9 @@ class Buy(models.Model):
         max_length=50, 
         choices=STATUS_CHOICES, 
         default='Pending'
-    )  # New field for tracking delivery status
+    )
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    payment_status = models.CharField(max_length=20, default="Pending")# New field for tracking delivery status
 
     def __str__(self):
         return f"{self.product.name} ({self.status})"

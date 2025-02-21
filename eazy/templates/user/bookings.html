@@ -231,6 +231,7 @@
                     <p><strong>Size:</strong> {{ order.size.size }}</p>
                     <p><strong>Quantity:</strong> {{ order.quantity }}</p>  <!-- Display Quantity -->
                     <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+                    <p>Status: {{ order.payment_status }}</p>
                     <p><strong>Status:</strong> 
                         {% if order.status == 'Delivered' %}
                             <span class="status-delivered">{{ order.status }}</span>
