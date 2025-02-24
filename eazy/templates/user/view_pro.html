@@ -109,13 +109,6 @@
             border-color: #ff4c00;
         }
 
-        .size-buttons button:disabled {
-            background-color: #ddd;
-            color: #666;
-            cursor: not-allowed;
-            border-color: #bbb;
-        }
-
         .buttons {
             margin-top: 30px;
             display: flex;
@@ -153,6 +146,7 @@
             color: red;
             font-size: 14px;
             display: none;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -184,14 +178,13 @@
                     <h3>Select Size</h3>
                     <div class="size-buttons">
                         {% for size, quantity in size_quantity_list %}
-                            <button type="button" data-size="{{ size }}" 
-                                    {% if quantity == 0 %} disabled {% endif %}
+                            <button type="button" data-size="{{ size }}"
                                     onclick="selectSize(this, '{{ size }}', {{ quantity }})">
                                 {{ size }} {% if quantity == 0 %} (Out of Stock) {% endif %}
                             </button>
                         {% endfor %}
                     </div>
-                    <p class="error-message" id="sizeError">Please select a size.</p>
+                    <p class="error-message" id="sizeError"></p>
                 </div>
 
                 <input type="hidden" name="size" id="selectedSize">
@@ -206,29 +199,20 @@
 
     <script>
         function selectSize(button, size, quantity) {
-            // Prevent selecting disabled sizes
             if (quantity === 0) {
+                document.getElementById('sizeError').innerText = "This size is out of stock! Please select another size.";
+                document.getElementById('sizeError').style.display = "block";
                 return;
             }
-
+            
             document.querySelectorAll('.size-buttons button').forEach(btn => btn.classList.remove('selected'));
             button.classList.add('selected');
             document.getElementById('selectedSize').value = size;
             document.getElementById('sizeError').style.display = "none";
-
-            // Enable buttons after selecting a size
+            
             document.querySelector('.add-to-cart').disabled = false;
             document.querySelector('.buy-now').disabled = false;
         }
-
-        document.getElementById("productForm").addEventListener("submit", function(event) {
-            let selectedSize = document.getElementById("selectedSize").value;
-            if (!selectedSize) {
-                document.getElementById("sizeError").style.display = "block";
-                event.preventDefault();
-            }
-        });
     </script>
-
 </body>
 </html>
