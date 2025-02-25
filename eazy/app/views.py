@@ -220,10 +220,20 @@ def home_ad(req):
 
 
     
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
 def eazy_logout(req):
-    req.session.flush()          #delete session
+    req.session.flush()          # Delete session
     logout(req)
-    return redirect(eazy_login)
+    
+    # Add confirmation message
+    messages.success(req, 'You have been logged out successfully.')
+    
+    # Redirect to login page
+    return redirect('eazy_login')
+
 
 
 
@@ -1091,4 +1101,4 @@ def payment_success(request):
             messages.error(request, "Payment verification failed!")
             return redirect(order_page)
 
-    return JsonResponse({"error": "Invalid request"}, status=400)
+   
