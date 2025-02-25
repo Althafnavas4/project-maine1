@@ -13,7 +13,7 @@ class Size(models.Model):
 
 # Product model
 class Product(models.Model):
-
+    
     pro_id = models.TextField()
     name = models.TextField()
     price = models.IntegerField()

@@ -825,7 +825,8 @@ def user_profile(request):
 
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from .models import Buy
+from django.db.models import Sum
+from .models import Buy, Product, ProductSize  # Import necessary models
 
 def cancel_order(request, pid):
     # Check if the user is authenticated
@@ -839,14 +840,35 @@ def cancel_order(request, pid):
     # Ensure the user owns this order
     if buy.user != request.user:
         messages.error(request, "You are not authorized to cancel this order.")
-        return redirect(user_booking)
+        return redirect('user_booking')
+
+    # Ensure that the order can be canceled (status is not already canceled or processed)
+    if buy.status == 'Canceled':
+        messages.error(request, f"Order {pid} has already been canceled.")
+        return redirect('user_booking')
 
     # Mark the order as canceled
     buy.status = 'Canceled'
+
+    # Restock the product size (based on quantity in the order)
+    product_size = get_object_or_404(ProductSize, product=buy.product, size=buy.size)  # Get the specific product size
+    
+    # Increase the product size stock
+    product_size.quantity += buy.quantity
+    product_size.save()
+
+    # Recalculate overall product stock based on all size quantities
+    total_quantity = ProductSize.objects.filter(product=buy.product).aggregate(total=Sum('quantity'))['total'] or 0
+    buy.product.quantity = total_quantity  # Update the total product quantity
+    buy.product.save()  # Save the updated product stock quantity
+
+    # Save the canceled order status
     buy.save()
 
-    messages.success(request, f"Order {pid} has been successfully canceled.")
-    return redirect(user_booking)
+    # Provide feedback to the user
+    messages.success(request, f"Order {pid} has been successfully canceled, and the product has been restocked.")
+
+    return redirect('user_booking')
 
 
 
