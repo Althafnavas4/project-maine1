@@ -29,7 +29,7 @@
         }
 
         h2 {
-            color: #333;
+            color: #d32f2f; /* Red color for headings */
         }
 
         p {
@@ -40,7 +40,7 @@
         .amount {
             font-size: 22px;
             font-weight: 600;
-            color: #27ae60;
+            color: #d32f2f; /* Red for amount */
         }
 
         .product-image {
@@ -59,7 +59,7 @@
         }
 
         .payment-btn {
-            background: #F37254;
+            background: #d32f2f; /* Red button */
             color: white;
             font-size: 18px;
             padding: 12px 20px;
@@ -72,7 +72,7 @@
         }
 
         .payment-btn:hover {
-            background: #e05a3f;
+            background: #b71c1c; /* Darker red on hover */
         }
 
         .fallback-btn {
@@ -81,16 +81,16 @@
             padding: 12px;
             font-size: 18px;
             margin-top: 10px;
-            border: 1px solid #27ae60;
+            border: 1px solid #d32f2f;
             background: white;
-            color: #27ae60;
+            color: #d32f2f;
             border-radius: 5px;
             cursor: pointer;
             transition: 0.3s ease;
         }
 
         .fallback-btn:hover {
-            background: #27ae60;
+            background: #d32f2f;
             color: white;
         }
 
@@ -158,7 +158,7 @@
             data-buttontext="Pay with Razorpay"
             data-name="eazy Store"
             data-description="Purchase of {{ buy.product.name }}"
-            data-theme.color="#F37254"
+            data-theme.color="#d32f2f" <!-- Red color for the Razorpay button -->
             data-methods='{"upi": true, "card": true, "netbanking": true}'></script>
 
             <!-- Fallback Button (if Razorpay fails) -->
