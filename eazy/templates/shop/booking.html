@@ -109,15 +109,21 @@
             margin-right: 8px;
         }
 
+        .home-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="container mt-4">
         <!-- Back Button with Arrow Icon -->
-        <div class="back-button">
-            <a href="javascript:history.back()">
-                <i class="fas fa-arrow-left"></i> Back
+        <div class="home-button">
+            <a href="{% url 'home_ad' %}" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Home
             </a>
         </div>
 

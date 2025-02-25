@@ -94,6 +94,26 @@
             color: white;
         }
 
+        .back-buttons {
+            margin-top: 20px;
+        }
+
+        .back-buttons a {
+            font-size: 18px;
+            text-decoration: none;
+            color: #d32f2f;
+            margin-right: 15px;
+            border: 1px solid #d32f2f;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: 0.3s ease;
+        }
+
+        .back-buttons a:hover {
+            background-color: #d32f2f;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .container {
                 width: 80%;
@@ -126,7 +146,6 @@
             <h3>Order Details</h3>
             <p><strong>Order ID:</strong> {{ buy.id }}</p>
             <p><strong>Quantity:</strong> {{ buy.quantity }}</p>
-          
         </div>
 
         <!-- ✅ Show UPI QR Code -->
@@ -165,8 +184,11 @@
             <button type="submit" class="fallback-btn">Pay Now</button>
         </form>
 
-        <!-- Back Button -->
-        <button type="button" class="fallback-btn" onclick="history.back()">Back</button>
+        <!-- Back and Home Navigation Links -->
+        <div class="back-buttons">
+            <a class="back" href="javascript:history.back()">Back</a>
+            <a href="{% url 'userprd' %}">Back to Home</a>
+        </div>
     </div>
 
 </body>
