@@ -143,14 +143,13 @@ EMAIL_HOST_PASSWORD = 'qkxemdhpbcoszkbu'  # Replace with your app password
 DEFAULT_FROM_EMAIL = 'Your App <your-email@example.com>'
 
 
-
 import environ
 
 env = environ.Env()
 environ.Env.read_env()
 
 
-RAZORPAY_KEY_ID = ""
-RAZORPAY_KEY_SECRET = ""
+RAZORPAY_KEY_ID = "rzp_test_fGXBbOpWsXJ5K7"
+RAZORPAY_KEY_SECRET = "8r97uL39w4etyjunuKYO4tpE"
 # In settings.py
-RAZORPAY_MODE = "TEST"  # or "LIVE" when you want to test UPI Payment Links in production
+RAZORPAY_MODE = "TEST"
