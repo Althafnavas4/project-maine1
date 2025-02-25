@@ -118,7 +118,16 @@
         {% endif %}
         
         <p><strong>Product:</strong> {{ buy.product.name }}</p>
+        <p><strong>Size:</strong> {{ buy.size }}</p>  <!-- Display Size of the Product -->
         <p class="amount"><strong>Amount:</strong> ₹{{ buy.price }}</p>
+        
+        <!-- Show the Order Details -->
+        <div class="order-details">
+            <h3>Order Details</h3>
+            <p><strong>Order ID:</strong> {{ buy.id }}</p>
+            <p><strong>Quantity:</strong> {{ buy.quantity }}</p>
+          
+        </div>
 
         <!-- ✅ Show UPI QR Code -->
         {% if qr_code_url %}
