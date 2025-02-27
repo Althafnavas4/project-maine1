@@ -149,7 +149,7 @@ env = environ.Env()
 environ.Env.read_env()
 
 
-RAZORPAY_KEY_ID = "rzp_test_WSbRrgv55ycao2"
-RAZORPAY_KEY_SECRET = "6FgwvMjKXZOxR3bdd9w6AmdZ"
+RAZORPAY_KEY_ID = "rzp_test_CiBzZpmWFE6EjP"
+RAZORPAY_KEY_SECRET = "atx1utL3yGcikbzaoCnnoKrU"
 # In settings.py
 RAZORPAY_MODE = "TEST"

@@ -585,15 +585,14 @@ def delete_cart(request, id):
     else:
         return redirect('eazy_login')
 
-
-
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from .models import User, Cart, Product, Size, ProductSize, Buy
 
 def user_buy(req, pid):
+    """ Handles buying a product from the cart and marks it as paid """
     user = get_object_or_404(User, username=req.session.get('user'))
     
     # Fetch the cart item
@@ -618,29 +617,34 @@ def user_buy(req, pid):
             return redirect('view_cart')
 
         # Reduce stock for the selected size atomically
-        
+        product_size.quantity = F('quantity') - quantity_to_buy
+        product_size.save(update_fields=['quantity'])
 
         # Update total product stock after purchase
         total_stock = ProductSize.objects.filter(product=product).aggregate(total=Sum('quantity'))['total'] or 0
         product.quantity = total_stock
         product.save(update_fields=['quantity'])
 
-        # Update existing Buy entry or create a new one
-        buy_entry, created = Buy.objects.get_or_create(
-            user=user, product=product, size=size,
-            defaults={'quantity': quantity_to_buy, 'price': total_price}
-        )
+        # ✅ Fetch an existing Buy entry instead of creating a duplicate
+        buy_entry = Buy.objects.filter(user=user, product=product, size=size).first()
 
-        if not created:
-            Buy.objects.filter(pk=buy_entry.pk).update(
-                quantity=F('quantity') + quantity_to_buy,
-                price=F('price') + total_price
+        if buy_entry:
+            # Update the existing entry
+            buy_entry.quantity = F('quantity') + quantity_to_buy
+            buy_entry.price = F('price') + total_price
+            buy_entry.payment_status = "Paid"  # Set payment to Paid
+            buy_entry.save(update_fields=['quantity', 'price', 'payment_status'])
+        else:
+            # Create a new entry only if one does not exist and mark as paid
+            Buy.objects.create(
+                user=user, product=product, size=size, quantity=quantity_to_buy, 
+                price=total_price, payment_status="Paid"
             )
 
         # Remove the cart item after successful purchase
         cart.delete()
 
-    messages.success(req, f'Product "{product.name}" (Size {size.size}) ')
+    messages.success(req, f'Product "{product.name}" (Size {size.size}) purchased successfully and marked as Paid!')
     return redirect('order_page')
 
 
@@ -706,8 +710,8 @@ def user_booking(req):
             'order_id': order.id,
             'status': order.status,
             'quantity': order.quantity,
-            'estimated_delivery': order.date + timezone.timedelta(days=5),
             'name': user.userprofile.name if hasattr(user, 'userprofile') and user.userprofile.name else 'No address provided',
+            'estimated_delivery': order.date + timezone.timedelta(days=5),
             'shipping_address': user.userprofile.address if hasattr(user, 'userprofile') and user.userprofile.address else 'No address provided',
             'email': user.email if user.email else 'No email provided',
             'phone_number': user.userprofile.phone_number if hasattr(user, 'userprofile') and user.userprofile.phone_number else 'No phone number provided',
