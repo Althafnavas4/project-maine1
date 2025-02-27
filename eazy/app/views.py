@@ -723,6 +723,7 @@ def order_page(request):
                 order = form.save(commit=False)
                 order.user = user  # Link order to the user
                 order.save()
+                
 
                 # ✅ Fetch the latest Buy object for this user
                 buy = Buy.objects.filter(user=user).order_by('-id').first()
@@ -991,46 +992,41 @@ def buy_all(request):
 
     messages.success(request, "Your order has been placed successfully.")
     return redirect('order_page')  # Update with your actual order page URL
-
-
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db.models import Sum, F
 import razorpay
 from django.conf import settings
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Sum
 from .models import Buy, ProductSize
 
-# Initialize Razorpay client
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 def create_razorpay_order(request, buy_id):
     buy = get_object_or_404(Buy, id=buy_id)
-    
-    # Check and update stock for the purchased product size
-    try:
-        product_size = ProductSize.objects.get(product=buy.product, size=buy.size)
-    except ProductSize.DoesNotExist:
-        return render(request, 'user/insufficient_stock.html', {
-            "message": "Product size information not available."
-        })
-    
-    if product_size.quantity >= buy.quantity:
-        product_size.quantity -= buy.quantity
-        product_size.save()
-        
-        # Recalculate overall product stock based on all size quantities
-        total_quantity = ProductSize.objects.filter(product=buy.product).aggregate(total=Sum('quantity'))['total'] or 0
-        buy.product.quantity = total_quantity
-        buy.product.save()
-    else:
-        return render(request, 'user/insufficient_stock.html', {
-            "message": "Insufficient stock available for this product."
-        })
+
+    # ✅ Lock the row for update to prevent race conditions
+    product_size = ProductSize.objects.select_for_update().get(product=buy.product, size=buy.size)
+
+    # ✅ Ensure stock is available before reserving
+    if product_size.quantity < buy.quantity:
+        messages.error(request, "Insufficient stock available.")
+        return redirect("userprd")
+
+    # ✅ Temporarily Reserve Stock (Reduce stock BEFORE payment)
+    product_size.quantity = F('quantity') - buy.quantity  # Use F() to prevent race conditions
+    product_size.save()
+
+    # ✅ Update total stock in Product model
+    total_quantity = ProductSize.objects.filter(product=buy.product).aggregate(Sum('quantity'))['quantity__sum'] or 0
+    buy.product.quantity = total_quantity
+    buy.product.save()
     
     order_amount = int(buy.price * 100)  # Convert INR to paisa
     order_currency = "INR"
     order_receipt = f"order_rcpt_{buy.id}"
 
-    # Create a Razorpay Order
+    # ✅ Create a Razorpay Order
     razorpay_order = razorpay_client.order.create({
         "amount": order_amount,
         "currency": order_currency,
@@ -1038,28 +1034,7 @@ def create_razorpay_order(request, buy_id):
         "payment_capture": 1
     })
 
-    # If in Live Mode, generate a UPI Payment Link (for a QR Code)
-    if getattr(settings, "RAZORPAY_MODE", "TEST") == "LIVE":
-        payment_link = razorpay_client.payment_link.create({
-            "amount": order_amount,
-            "currency": "INR",
-            "accept_partial": False,
-            "expire_by": 1735689600,  # Adjust expiry timestamp as needed
-            "reference_id": f"order_{buy.id}",
-            "description": f"UPI Payment for {buy.product.name}",
-            "customer": {
-                "name": request.user.username,
-                "email": request.user.email
-            },
-            "notify": {"sms": True, "email": True},
-            "reminder_enable": True,
-            "upi_link": True  # Enables UPI Payment Link (QR Code)
-        })
-        qr_code_url = payment_link.get("short_url", "")
-    else:
-        # In test mode, UPI Payment Links are not supported.
-        qr_code_url = ""
-    
+    # ✅ Save Razorpay order ID
     buy.razorpay_order_id = razorpay_order['id']
     buy.save()
 
@@ -1067,38 +1042,73 @@ def create_razorpay_order(request, buy_id):
         "order_id": razorpay_order['id'],
         "amount": order_amount,
         "key": settings.RAZORPAY_KEY_ID,
-        "qr_code_url": qr_code_url,
         "buy": buy,
+        "callback_url": request.build_absolute_uri(reverse("payment_success"))
     })
 
 
-
+@csrf_exempt  # ✅ Disable CSRF for Razorpay Payment Verification
 def payment_success(request):
     if request.method == "POST":
         razorpay_order_id = request.POST.get("razorpay_order_id")
         payment_id = request.POST.get("razorpay_payment_id")
         signature = request.POST.get("razorpay_signature")
 
+        if not razorpay_order_id or not payment_id or not signature:
+            messages.error(request, "Invalid payment details received.")
+            return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if payment fails
+
         try:
-            # Verify payment signature
+            # ✅ Verify Razorpay payment signature
             params_dict = {
                 "razorpay_order_id": razorpay_order_id,
                 "razorpay_payment_id": payment_id,
                 "razorpay_signature": signature
             }
-
             result = razorpay_client.utility.verify_payment_signature(params_dict)
 
-            # Update order status
-            buy = get_object_or_404(Buy, razorpay_order_id=razorpay_order_id)
-            buy.payment_status = "Paid"
-            buy.save()
+            if result:
+                buy = get_object_or_404(Buy, razorpay_order_id=razorpay_order_id)
+                product_size = get_object_or_404(ProductSize, product=buy.product, size=buy.size)
 
-            messages.success(request, "Payment successful!")
-            return redirect(order_success)
+                # ✅ Prevent stock going below 0
+                if product_size.quantity < buy.quantity:
+                    messages.error(request, "Stock update failed: Insufficient stock.")
+                    return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if error
+
+                # ✅ Deduct stock after successful payment
+                product_size.quantity = F('quantity') - buy.quantity
+                product_size.save()
+
+                # ✅ Update total stock in Product model
+                total_stock = ProductSize.objects.filter(product=buy.product).aggregate(Sum('quantity'))['quantity__sum'] or 0
+                buy.product.quantity = total_stock
+                buy.product.save()
+
+                # ✅ Update payment status
+                buy.payment_status = "Paid"
+                buy.save()
+
+                messages.success(request, "Payment successful! Stock updated.")
+                return redirect("order_success")  
 
         except razorpay.errors.SignatureVerificationError:
             messages.error(request, "Payment verification failed!")
-            return redirect(order_page)
+            return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if error
 
-   
+    messages.error(request, "Invalid request method.")
+    return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if invalid request
+
+
+# ✅ Function to Restore Stock if Payment Fails
+def restore_stock_and_redirect(razorpay_order_id, redirect_page):
+    buy = Buy.objects.filter(razorpay_order_id=razorpay_order_id).first()
+    if buy:
+        product_size = ProductSize.objects.filter(product=buy.product, size=buy.size).first()
+        if product_size:
+            product_size.quantity = F('quantity') + buy.quantity  # ✅ Restore stock safely
+            product_size.save()
+
+    return redirect(redirect_page)  
+
+
