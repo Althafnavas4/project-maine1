@@ -147,6 +147,7 @@
             font-size: 14px;
             display: none;
             margin-top: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -184,14 +185,14 @@
                             </button>
                         {% endfor %}
                     </div>
-                    <p class="error-message" id="sizeError"></p>
+                    <p class="error-message" id="sizeError">⚠️ Please select a size before proceeding.</p>
                 </div>
 
                 <input type="hidden" name="size" id="selectedSize">
 
                 <div class="buttons">
-                    <button type="submit" class="add-to-cart" formaction="{% url 'add_to_cart' data.pk %}" disabled> Add to Cart </button>
-                    <button type="submit" class="buy-now" formaction="{% url 'user_buy1' data.pk %}" disabled> Buy Now </button>
+                    <button type="submit" class="add-to-cart" formaction="{% url 'add_to_cart' data.pk %}" onclick="return validateSize()"> Add to Cart </button>
+                    <button type="submit" class="buy-now" formaction="{% url 'user_buy1' data.pk %}" onclick="return validateSize()"> Buy Now </button>
                 </div>
             </form>
         </div>
@@ -200,7 +201,7 @@
     <script>
         function selectSize(button, size, quantity) {
             if (quantity === 0) {
-                document.getElementById('sizeError').innerText = "This size is out of stock! Please select another size.";
+                document.getElementById('sizeError').innerText = "⚠️ This size is out of stock! Please select another size.";
                 document.getElementById('sizeError').style.display = "block";
                 return;
             }
@@ -209,9 +210,15 @@
             button.classList.add('selected');
             document.getElementById('selectedSize').value = size;
             document.getElementById('sizeError').style.display = "none";
-            
-            document.querySelector('.add-to-cart').disabled = false;
-            document.querySelector('.buy-now').disabled = false;
+        }
+
+        function validateSize() {
+            let selectedSize = document.getElementById('selectedSize').value;
+            if (!selectedSize) {
+                document.getElementById('sizeError').style.display = "block";
+                return false;  // Prevent form submission
+            }
+            return true;  // Allow form submission
         }
     </script>
 </body>

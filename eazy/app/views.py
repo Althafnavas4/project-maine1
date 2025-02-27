@@ -374,8 +374,9 @@ def booking(req):
                     messages.error(req, f"Order {buy_id} not found.")
         return redirect('booking')
 
-    # Fetch Buy objects and their associated Orders
-    buys = Buy.objects.all().order_by('-date')
+    # ✅ Fetch only "Paid" orders
+    buys = Buy.objects.filter(payment_status="Paid").order_by('-date')  
+
     combined_data = []
 
     for buy in buys:
@@ -394,6 +395,7 @@ def booking(req):
         combined_data.append({'buy': buy, 'order': order})
 
     return render(req, 'shop/booking.html', {'combined_data': combined_data})
+
 
 
 def create_order(request, buy_id):
@@ -651,7 +653,7 @@ def user_buy1(req, pid):
         price = product.offer_price * quantity
         Buy.objects.create(user=user, product=product, price=price, size=size, quantity=quantity)
 
-        messages.success(req, f'{quantity} Product(s) purchased successfully!')
+        messages.success(req, f'{quantity} Product(s) ')
         return redirect('order_page')
     else:
         messages.error(req, 'Insufficient stock for the selected size.')
@@ -1101,6 +1103,7 @@ def payment_success(request):
 
 
 # ✅ Function to Restore Stock if Payment Fails
+# ✅ Function to Restore Stock if Payment Fails
 def restore_stock_and_redirect(razorpay_order_id, redirect_page):
     """ Restore stock when payment fails and delete order """
     buy = Buy.objects.filter(razorpay_order_id=razorpay_order_id).first()
@@ -1108,11 +1111,17 @@ def restore_stock_and_redirect(razorpay_order_id, redirect_page):
     if buy:
         product_size = ProductSize.objects.filter(product=buy.product, size=buy.size).first()
         if product_size:
-            # Restore stock safely
-            product_size.quantity = F('quantity') + buy.quantity
-            product_size.save(update_fields=['quantity'])
+            with transaction.atomic():
+                # ✅ Restore stock safely for the specific size
+                product_size.quantity = F('quantity') + buy.quantity
+                product_size.save(update_fields=['quantity'])
 
-        # Delete the Buy object as payment failed
+                # ✅ Update total product stock
+                total_stock = ProductSize.objects.filter(product=buy.product).aggregate(Sum('quantity'))['quantity__sum'] or 0
+                Product.objects.filter(id=buy.product.id).update(quantity=total_stock)
+
+        # ✅ Delete the Buy object since payment failed
         buy.delete()
 
     return redirect(redirect_page)
+
