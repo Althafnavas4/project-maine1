@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Logout</title>
+    
+    <style>
+        /* General Page Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color:rgb(0, 0, 0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Container Box */
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Heading Style */
+        h2 {
+            color: #d9534f;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        /* Button Styling */
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .logout-btn:hover {
+            background-color: #c9302c;
+        }
+
+        /* Cancel Button */
+        .cancel-btn {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background-color: #31b0d5;
+        }
+
+        /* Button Container */
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        /* Fade-in Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Are you sure you want to log out?</h2>
+        <p>You will need to log in again to access your account.</p>
+        
+        <form method="POST" action="{% url 'eazy_logout' %}">
+            {% csrf_token %}
+            <div class="button-group">
+                <button type="submit" class="btn logout-btn">Yes, Logout</button>
+                <a href="{% url 'userprd' %}" class="btn cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

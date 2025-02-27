@@ -264,6 +264,7 @@
                                     <p><strong>Quantity:</strong> {{ order.quantity }}</p>  <!-- Display Quantity -->
                                     <p><strong>Order ID:</strong> {{ order.order_id }}</p>
                                     <p><strong>Status:</strong> {{ order.status }}</p>
+                                    <p><strong>name:</strong> {{ order.name|default:'No name provided' }}</p>
                                     <p><strong>Estimated Delivery:</strong> {{ order.estimated_delivery|default:'N/A' }}</p>
                                     <p><strong>Shipping Address:</strong> {{ order.shipping_address|default:'No address provided' }}</p>
                                     <p><strong>Email:</strong> {{ order.email|default:'No email provided' }}</p>

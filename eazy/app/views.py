@@ -222,17 +222,20 @@ def home_ad(req):
     
 from django.contrib import messages
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 
-def eazy_logout(req):
-    req.session.flush()          # Delete session
-    logout(req)
-    
-    # Add confirmation message
-    messages.success(req, 'You have been logged out successfully.')
-    
-    # Redirect to login page
-    return redirect('eazy_login')
+def confirm_logout(request):
+    """ Renders a logout confirmation page """
+    return render(request, "user/confirm_logout.html")  # Create this template
+
+def eazy_logout(request):
+    """ Logs out the user after confirmation """
+    if request.method == "POST":
+        request.session.flush()  # Delete session
+        logout(request)
+        messages.success(request, "You have been logged out successfully.")
+        return redirect("eazy_login")  # Redirect to login page
+    return redirect("confirm_logout")  # If GET request, redirect to confirmation page
 
 
 
@@ -353,9 +356,9 @@ def delete(req,pid):
     return redirect(home_ad)
 
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Buy, Order
+from .models import Buy, Order, UserProfile
 
 def booking(req):
     if req.method == "POST":
@@ -367,7 +370,13 @@ def booking(req):
                     if buy.status != value:
                         buy.status = value
                         buy.save()
-                        messages.success(req, f"Order {buy_id} status updated to {value}.")
+
+                        # ✅ Automatically delete "Canceled" orders from the database
+                        if value == "Canceled":
+                            buy.delete()
+                            messages.warning(req, f"Order {buy_id} has been canceled and removed.")
+                        else:
+                            messages.success(req, f"Order {buy_id} status updated to {value}.")
                     else:
                         messages.info(req, f"Order {buy_id} status is already {value}.")
                 except Buy.DoesNotExist:
@@ -378,18 +387,22 @@ def booking(req):
     buys = Buy.objects.filter(payment_status="Paid").order_by('-date')  
 
     combined_data = []
-
     for buy in buys:
-        order = Order.objects.filter(buy=buy).first()  # Get the correct order linked to this Buy
-        
-        # Ensure there's always an order linked to Buy
+        order = Order.objects.filter(buy=buy).first()
+
+        # ✅ Fetch the user profile safely
+        profile = getattr(buy.user, 'userprofile', None)
+
+        # ✅ Ensure the correct customer name is displayed
+        customer_name = profile.name if profile and profile.name else "N/A"
+
         if not order:
             order = Order.objects.create(
                 buy=buy,
-                customer_name=buy.user.username,
-                phone_number=buy.user.userprofile.phone_number if hasattr(buy.user, 'userprofile') else "N/A",
+                customer_name=customer_name,  
+                phone_number=profile.phone_number if profile and profile.phone_number else "N/A",
                 email=buy.user.email if buy.user.email else "N/A",
-                address=buy.user.userprofile.address if hasattr(buy.user, 'userprofile') else "N/A",
+                address=profile.address if profile and profile.address else "N/A",
             )
 
         combined_data.append({'buy': buy, 'order': order})
@@ -398,27 +411,34 @@ def booking(req):
 
 
 
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Buy, Order, UserProfile
+
 def create_order(request, buy_id):
-    buy = Buy.objects.get(id=buy_id)
+    buy = get_object_or_404(Buy, id=buy_id)
 
-    # First, check if an Order already exists
-    order = Order.objects.filter(buy=buy).first()
+    # ✅ Fetch the user profile safely
+    profile = getattr(buy.user, 'userprofile', None)
 
-    if order:
-        messages.info(request, f"An order already exists for {buy.product.name}. No duplicate created.")
-    else:
-        # Create new Order only if none exists
-        order = Order.objects.create(
-            buy=buy,
-            customer_name=buy.user.username,
-            phone_number=buy.user.userprofile.phone_number if hasattr(buy.user, 'userprofile') else "",
-            email=buy.user.email,
-            address=buy.user.userprofile.address if hasattr(buy.user, 'userprofile') else "",
-        )
+    # ✅ Ensure an order doesn't already exist
+    order, created = Order.objects.get_or_create(
+        buy=buy,
+        defaults={
+            'customer_name': profile.name if profile and profile.name else "N/A",  # ✅ Corrected syntax
+            'phone_number': profile.phone_number if profile and profile.phone_number else "",
+            'email': buy.user.email if buy.user.email else "N/A",
+            'address': profile.address if profile and profile.address else "",
+        }
+    )
+
+    if created:
         messages.success(request, f"Order for {buy.product.name} created successfully!")
+    else:
+        messages.info(request, f"An order already exists for {buy.product.name}. No duplicate created.")
 
     return redirect('booking')
-
 
 
 
@@ -653,7 +673,7 @@ def user_buy1(req, pid):
         price = product.offer_price * quantity
         Buy.objects.create(user=user, product=product, price=price, size=size, quantity=quantity)
 
-        messages.success(req, f'{quantity} Product(s) ')
+      
         return redirect('order_page')
     else:
         messages.error(req, 'Insufficient stock for the selected size.')
@@ -687,6 +707,7 @@ def user_booking(req):
             'status': order.status,
             'quantity': order.quantity,
             'estimated_delivery': order.date + timezone.timedelta(days=5),
+            'name': user.userprofile.name if hasattr(user, 'userprofile') and user.userprofile.name else 'No address provided',
             'shipping_address': user.userprofile.address if hasattr(user, 'userprofile') and user.userprofile.address else 'No address provided',
             'email': user.email if user.email else 'No email provided',
             'phone_number': user.userprofile.phone_number if hasattr(user, 'userprofile') and user.userprofile.phone_number else 'No phone number provided',

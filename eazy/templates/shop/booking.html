@@ -8,34 +8,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Include Font Awesome for the icon -->
+    <!-- Include Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
     <style>
-        /* Light red background for canceled orders */
-        .canceled-row {
-            background-color: #f8d7da !important;
-            color: #721c24 !important;
-        }
-
-        /* Blue background for pending orders */
-        .pending-row {
-            background-color: #cce5ff !important;
-            color: #004085 !important;
-        }
-
-        /* Green background for shipped orders */
-        .shipped-row {
-            background-color: #d4edda !important;
-            color: #155724 !important;
-        }
-
-        .canceled-row td,
-        .pending-row td,
-        .shipped-row td,
-        .canceled-row th,
-        .pending-row th,
-        .shipped-row th {
+        /* Styling for different order statuses */
+        .canceled-row { background-color: #f8d7da !important; color: #721c24 !important; }
+        .pending-row { background-color: #cce5ff !important; color: #004085 !important; }
+        .shipped-row { background-color: #d4edda !important; color: #155724 !important; }
+        
+        .canceled-row td, .pending-row td, .shipped-row td {
             background-color: inherit !important;
             color: inherit !important;
         }
@@ -61,21 +43,9 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Color Styles for Different Message Types */
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .message.info {
-            background-color: #cce5ff;
-            color: #004085;
-        }
+        .message.success { background-color: #d4edda; color: #155724; }
+        .message.error { background-color: #f8d7da; color: #721c24; }
+        .message.info { background-color: #cce5ff; color: #004085; }
 
         .message button {
             background: transparent;
@@ -85,42 +55,17 @@
             cursor: pointer;
         }
 
-        /* Back Button Style */
-        .back-button {
-            margin-bottom: 20px;
-        }
-
-        .back-button a {
-            display: flex;
-            align-items: center;
-            background-color: #ffffff;
-            color: #333;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 16px;
-        }
-
-        .back-button a:hover {
-            background-color: #ffffff;
-        }
-
-        .back-button i {
-            margin-right: 8px;
-        }
-
         .home-button {
             position: absolute;
             top: 10px;
             left: 10px;
         }
-
     </style>
 </head>
 
 <body>
     <div class="container mt-4">
-        <!-- Back Button with Arrow Icon -->
+        <!-- Home Button -->
         <div class="home-button">
             <a href="{% url 'home_ad' %}" class="btn btn-secondary">
                 <i class="fas fa-home"></i> Home
@@ -129,25 +74,25 @@
 
         <h1 class="text-center mb-4">Admin Orders Page</h1>
 
-        <!-- Success or Error Messages -->
+        <!-- Display Success/Error Messages -->
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
             <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
                 {{ message }}
-                <button class="cancel-btn" onclick="this.parentElement.style.display='none';">Cancel</button>
+                <button class="cancel-btn" onclick="this.parentElement.style.display='none';">✖</button>
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
         <!-- Clear All Orders Button -->
-         <div class="clear-all-btn mb-4">
+        <div class="mb-4">
             <form method="POST" action="{% url 'clear_all_orders2' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Clear All Orders</button>
             </form>
-        </div> 
+        </div>
 
         <!-- Search Bar -->
         <div class="mb-3">
@@ -170,7 +115,7 @@
                             <th>Product</th>
                             <th>Price</th>
                             <th>Size</th>
-                            <th>Quantity</th> <!-- New Quantity Column -->
+                            <th>Quantity</th>
                             <th>Image</th>
                             <th>Date</th>
                             <th>Status</th>
@@ -179,14 +124,15 @@
                     </thead>
                     <tbody id="ordersTable">
                         {% for entry in combined_data %}
-                        <tr class="{% if entry.buy.status == 'Canceled' %}canceled-row{% elif entry.buy.status == 'Pending' %}pending-row{% elif entry.buy.status == 'Shipped' %}shipped-row{% endif %}">
+                        <tr class="{% if entry.buy.status == 'Canceled' %}canceled-row{% elif entry.buy.status == 'Pending' %}pending-row{% elif entry.buy.status == 'Shipped' %}shipped-row{% endif %}" 
+                            data-customer="{{ entry.order.customer_name|default:'N/A'|lower }}"
+                            data-product="{{ entry.buy.product.name|lower }}">
                             <th>{{ forloop.counter }}</th>
                             <td>{{ entry.buy.id }}</td>
                             <td>{{ entry.order.customer_name|default:"N/A" }}</td>
                             <td>{{ entry.order.phone_number|default:"N/A" }}</td>
                             <td>{{ entry.order.email|default:"N/A" }}</td>
                             <td>{{ entry.order.address|default:"N/A" }}</td>
-
                             <td>{{ entry.buy.product.name }}</td>
                             <td>${{ entry.buy.price }}</td>
                             <td>{{ entry.buy.size }}</td>
@@ -197,7 +143,7 @@
                             <td>{{ entry.buy.date }}</td>
                             <td>
                                 <p>Status: {{ entry.buy.status }}</p>
-                                <select name="status_{{ entry.buy.id }}" class="form-select">
+                                <select name="status_{{ entry.buy.id }}" class="form-select status-dropdown" {% if entry.buy.status == 'Canceled' %}disabled{% endif %}>
                                     <option value="Pending" {% if entry.buy.status == 'Pending' %}selected{% endif %}>Pending</option>
                                     <option value="Shipped" {% if entry.buy.status == 'Shipped' %}selected{% endif %}>Shipped</option>
                                     <option value="Delivered" {% if entry.buy.status == 'Delivered' %}selected{% endif %}>Delivered</option>
@@ -205,37 +151,24 @@
                                 </select>
                             </td>
                             <td>
-                                <button type="submit" name="update" value="{{ entry.buy.id }}" class="btn btn-primary">Update</button>
+                                <button type="submit" name="update_status" value="{{ entry.buy.id }}" class="btn btn-primary update-btn" {% if entry.buy.status == 'Canceled' %}disabled{% endif %}>Update</button>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
-                    
                 </table>
             </div>
         </form>
     </div>
 
     <script>
-        // Search functionality for filtering the table
-        document.getElementById('searchInput').addEventListener('input', function (event) {
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(event) {
             const query = event.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#ordersTable tr');
-            
-            rows.forEach(function(row) {
-                const customerName = row.querySelector('td:nth-child(3)');
-                const productName = row.querySelector('td:nth-child(7)');
-                
-                if (customerName && productName) {
-                    const customerText = customerName.textContent.toLowerCase();
-                    const productText = productName.textContent.toLowerCase();
-                    
-                    if (customerText.includes(query) || productText.includes(query)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
+            document.querySelectorAll('#ordersTable tr').forEach(row => {
+                const customer = row.getAttribute('data-customer');
+                const product = row.getAttribute('data-product');
+                row.style.display = (customer.includes(query) || product.includes(query)) ? '' : 'none';
             });
         });
     </script>

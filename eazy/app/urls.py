@@ -13,6 +13,7 @@ urlpatterns=[
     path('', views.user_home3, name='user_home3'),
     path('login', views.eazy_login, name='eazy_login'),
     path('eazy_logout',views.eazy_logout, name='eazy_logout'),
+    path("confirm_logout/", views.confirm_logout, name="confirm_logout"),
 
     # ----------------admin--------------------
     path('home_ad',views.home_ad, name='home_ad'),
@@ -54,6 +55,7 @@ urlpatterns=[
     path('shop-now/', views.shop_now, name='shop_now'),
     path('buy-all/', views.buy_all, name='buy_all'),
     path('create-order/<int:buy_id>/', views.create_order, name='create_order'),
-     path('create_order2/<int:buy_id>/', views.create_razorpay_order, name="create_razorpay_order"),
+    path('create_order2/<int:buy_id>/', views.create_razorpay_order, name="create_razorpay_order"),
     path('payment_success/', views.payment_success, name="payment_success"),
+    
 ]
