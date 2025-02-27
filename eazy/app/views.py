@@ -618,7 +618,7 @@ def user_buy(req, pid):
         # Remove the cart item after successful purchase
         cart.delete()
 
-    messages.success(req, f'Product "{product.name}" (Size {size.size}) purchased successfully!')
+    messages.success(req, f'Product "{product.name}" (Size {size.size}) ')
     return redirect('order_page')
 
 
@@ -669,9 +669,11 @@ def user_buy1(req, pid):
 
 from django.utils import timezone
 
+from django.utils import timezone
+
 def user_booking(req):
-    user = User.objects.get(username=req.session['user'])
-    buy = Buy.objects.filter(user=user).order_by('-date')
+    user = get_object_or_404(User, username=req.session['user'])
+    buy = Buy.objects.filter(user=user, payment_status="Paid").order_by('-date')  # Only show paid orders
 
     enriched_buy = []
     for order in buy:
@@ -679,9 +681,9 @@ def user_booking(req):
             'product': order.product,
             'price': order.price,
             'size': order.size,
-            'order_id': order.id,  # Ensure this is populated
+            'order_id': order.id,
             'status': order.status,
-            'quantity': order.quantity,  # Add the quantity to the context
+            'quantity': order.quantity,
             'estimated_delivery': order.date + timezone.timedelta(days=5),
             'shipping_address': user.userprofile.address if hasattr(user, 'userprofile') and user.userprofile.address else 'No address provided',
             'email': user.email if user.email else 'No email provided',
@@ -689,7 +691,6 @@ def user_booking(req):
         })
 
     return render(req, 'user/bookings.html', {'buy': enriched_buy})
-
 
 
 
@@ -705,7 +706,6 @@ def userprd(req):
     
 from .forms import OrderForm
 
-# views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
@@ -719,33 +719,35 @@ def order_page(request):
         if request.method == "POST":
             form = OrderForm(request.POST)
             if form.is_valid():
-                # Process the order and save it
+                # ✅ Process and Save Order
                 order = form.save(commit=False)
                 order.user = user  # Link order to the user
                 order.save()
-                
 
                 # ✅ Fetch the latest Buy object for this user
                 buy = Buy.objects.filter(user=user).order_by('-id').first()
 
                 if not buy:
-                    messages.error(request, "No valid Buy record found!")
+                    messages.error(request, "⚠️ No valid purchase record found! Please try again.")
                     return redirect('order_page')
 
-                messages.success(request, "Order placed successfully.")
-                
+                messages.success(request, "🎉 Order placed successfully! Redirecting to payment...")
+
                 # ✅ Redirect to Razorpay order creation with correct `buy.id`
                 return redirect(reverse('create_razorpay_order', args=[buy.id]))
 
+            else:
+                messages.error(request, "⚠️ Order form is invalid. Please check your details.")
+
         else:
-            # Pre-fill form with user details
+            # ✅ Pre-fill form with user details
             form = OrderForm(initial={'user': user})
         
         return render(request, 'user/order.html', {'form': form})
-    
-    else:
-        return redirect('login')  # Redirect to login page if not authenticated
 
+    else:
+        messages.warning(request, "⚠️ You must be logged in to place an order.")
+        return redirect('login')  # Redirect to login page if not authenticated
 
    
 
@@ -989,44 +991,32 @@ def buy_all(request):
 
         # Clear cart after successful purchase
         cart_items.delete()
-
-    messages.success(request, "Your order has been placed successfully.")
-    return redirect('order_page')  # Update with your actual order page URL
-from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Sum, F
 import razorpay
 from django.conf import settings
-from .models import Buy, ProductSize
+from django.urls import reverse
+from django.db import transaction
+from .models import Buy, ProductSize, Product
 
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 def create_razorpay_order(request, buy_id):
     buy = get_object_or_404(Buy, id=buy_id)
 
-    # ✅ Lock the row for update to prevent race conditions
-    product_size = ProductSize.objects.select_for_update().get(product=buy.product, size=buy.size)
+    # Ensure stock is available before proceeding
+    product_size = get_object_or_404(ProductSize, product=buy.product, size=buy.size)
 
-    # ✅ Ensure stock is available before reserving
     if product_size.quantity < buy.quantity:
         messages.error(request, "Insufficient stock available.")
-        return redirect("userprd")
+        return redirect("userprd")  # Redirect user back to product page
 
-    # ✅ Temporarily Reserve Stock (Reduce stock BEFORE payment)
-    product_size.quantity = F('quantity') - buy.quantity  # Use F() to prevent race conditions
-    product_size.save()
-
-    # ✅ Update total stock in Product model
-    total_quantity = ProductSize.objects.filter(product=buy.product).aggregate(Sum('quantity'))['quantity__sum'] or 0
-    buy.product.quantity = total_quantity
-    buy.product.save()
-    
-    order_amount = int(buy.price * 100)  # Convert INR to paisa
+    order_amount = int(buy.price * 100)  # Convert to paisa
     order_currency = "INR"
     order_receipt = f"order_rcpt_{buy.id}"
 
-    # ✅ Create a Razorpay Order
+    # Create a Razorpay Order
     razorpay_order = razorpay_client.order.create({
         "amount": order_amount,
         "currency": order_currency,
@@ -1034,7 +1024,7 @@ def create_razorpay_order(request, buy_id):
         "payment_capture": 1
     })
 
-    # ✅ Save Razorpay order ID
+    # Save Razorpay Order ID
     buy.razorpay_order_id = razorpay_order['id']
     buy.save()
 
@@ -1047,7 +1037,17 @@ def create_razorpay_order(request, buy_id):
     })
 
 
-@csrf_exempt  # ✅ Disable CSRF for Razorpay Payment Verification
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+import razorpay
+from django.db.models import Sum, F
+from django.conf import settings
+from django.urls import reverse
+from django.db import transaction
+from .models import Buy, ProductSize, Product
+
+@csrf_exempt
 def payment_success(request):
     if request.method == "POST":
         razorpay_order_id = request.POST.get("razorpay_order_id")
@@ -1056,59 +1056,63 @@ def payment_success(request):
 
         if not razorpay_order_id or not payment_id or not signature:
             messages.error(request, "Invalid payment details received.")
-            return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if payment fails
+            return restore_stock_and_redirect(razorpay_order_id, "order_page")
 
         try:
-            # ✅ Verify Razorpay payment signature
+            # Verify payment signature
             params_dict = {
                 "razorpay_order_id": razorpay_order_id,
                 "razorpay_payment_id": payment_id,
                 "razorpay_signature": signature
             }
-            result = razorpay_client.utility.verify_payment_signature(params_dict)
+            razorpay_client.utility.verify_payment_signature(params_dict)
 
-            if result:
-                buy = get_object_or_404(Buy, razorpay_order_id=razorpay_order_id)
-                product_size = get_object_or_404(ProductSize, product=buy.product, size=buy.size)
+            # Retrieve the Buy object
+            buy = get_object_or_404(Buy, razorpay_order_id=razorpay_order_id)
+            product_size = get_object_or_404(ProductSize, product=buy.product, size=buy.size)
 
-                # ✅ Prevent stock going below 0
-                if product_size.quantity < buy.quantity:
-                    messages.error(request, "Stock update failed: Insufficient stock.")
-                    return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if error
+            # Prevent stock from going negative
+            if product_size.quantity < buy.quantity:
+                messages.error(request, "Payment failed. ")
+                return restore_stock_and_redirect(razorpay_order_id, "order_page")
 
-                # ✅ Deduct stock after successful payment
+            with transaction.atomic():
+                # Deduct stock after successful payment
                 product_size.quantity = F('quantity') - buy.quantity
-                product_size.save()
+                product_size.save(update_fields=['quantity'])
 
-                # ✅ Update total stock in Product model
+                # Update total stock in Product model
                 total_stock = ProductSize.objects.filter(product=buy.product).aggregate(Sum('quantity'))['quantity__sum'] or 0
-                buy.product.quantity = total_stock
-                buy.product.save()
+                Product.objects.filter(id=buy.product.id).update(quantity=total_stock)
 
-                # ✅ Update payment status
+                # Mark Order as Paid
                 buy.payment_status = "Paid"
-                buy.save()
+                buy.save(update_fields=['payment_status'])
 
-                messages.success(request, "Payment successful! Stock updated.")
-                return redirect("order_success")  
+            messages.success(request, "Payment successful! Your order has been confirmed.")
+            return redirect(reverse("order_success"))
 
         except razorpay.errors.SignatureVerificationError:
-            messages.error(request, "Payment verification failed!")
-            return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if error
+            messages.error(request, "Payment verification failed! Please try again.")
+            return restore_stock_and_redirect(razorpay_order_id, "order_page")
 
     messages.error(request, "Invalid request method.")
-    return restore_stock_and_redirect(razorpay_order_id, "order_page")  # ✅ Restore stock if invalid request
+    return restore_stock_and_redirect(razorpay_order_id, "order_page")
 
 
 # ✅ Function to Restore Stock if Payment Fails
 def restore_stock_and_redirect(razorpay_order_id, redirect_page):
+    """ Restore stock when payment fails and delete order """
     buy = Buy.objects.filter(razorpay_order_id=razorpay_order_id).first()
+
     if buy:
         product_size = ProductSize.objects.filter(product=buy.product, size=buy.size).first()
         if product_size:
-            product_size.quantity = F('quantity') + buy.quantity  # ✅ Restore stock safely
-            product_size.save()
+            # Restore stock safely
+            product_size.quantity = F('quantity') + buy.quantity
+            product_size.save(update_fields=['quantity'])
 
-    return redirect(redirect_page)  
+        # Delete the Buy object as payment failed
+        buy.delete()
 
-
+    return redirect(redirect_page)
