@@ -644,7 +644,7 @@ def user_buy(req, pid):
         # Remove the cart item after successful purchase
         cart.delete()
 
-    messages.success(req, f'Product "{product.name}" (Size {size.size}) purchased successfully and marked as Paid!')
+    
     return redirect('order_page')
 
 

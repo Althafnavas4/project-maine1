@@ -87,12 +87,12 @@
         {% endif %}
 
         <!-- Clear All Orders Button -->
-        <div class="mb-4">
+        {% comment %} <div class="mb-4">
             <form method="POST" action="{% url 'clear_all_orders2' %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Clear All Orders</button>
             </form>
-        </div>
+        </div> {% endcomment %}
 
         <!-- Search Bar -->
         <div class="mb-3">
