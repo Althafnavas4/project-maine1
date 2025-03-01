@@ -612,20 +612,25 @@ def user_buy(req, pid):
         # Lock the specific size stock for the product
         product_size = ProductSize.objects.select_for_update().filter(product=product, size=size).first()
 
-        if not product_size or product_size.quantity < quantity_to_buy:
-            messages.error(req, f'Sorry, size {size.size} is out of stock.')
+        # Check if the size exists and if there is sufficient stock
+        if not product_size:
+            messages.error(req, f'Sorry, size {size.size} is not available for this product.')
+            return redirect('view_cart')
+
+        if product_size.quantity < quantity_to_buy:
+            messages.error(req, f'Sorry, only {product_size.quantity} items are available in size {size.size}.')
             return redirect('view_cart')
 
         # Reduce stock for the selected size atomically
         product_size.quantity = F('quantity') - quantity_to_buy
         product_size.save(update_fields=['quantity'])
 
-        # Update total product stock after purchase
+        # Update the total product stock after purchase
         total_stock = ProductSize.objects.filter(product=product).aggregate(total=Sum('quantity'))['total'] or 0
         product.quantity = total_stock
         product.save(update_fields=['quantity'])
 
-        # ✅ Fetch an existing Buy entry instead of creating a duplicate
+        # Fetch an existing Buy entry instead of creating a duplicate
         buy_entry = Buy.objects.filter(user=user, product=product, size=size).first()
 
         if buy_entry:
@@ -644,7 +649,6 @@ def user_buy(req, pid):
         # Remove the cart item after successful purchase
         cart.delete()
 
-    
     return redirect('order_page')
 
 
