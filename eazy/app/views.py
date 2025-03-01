@@ -712,7 +712,7 @@ def user_buy1(req, pid):
     product_size = get_object_or_404(ProductSize, product=product, size=size)
 
     if product_size.quantity >= quantity:
-        product_size.quantity = quantity
+        
         product_size.save()
 
         # Update total product stock
@@ -1150,7 +1150,7 @@ def payment_success(request):
 
             with transaction.atomic():
                 # Deduct stock after successful payment
-                product_size.quantity = F('quantity') + buy.quantity
+                product_size.quantity = F('quantity') - buy.quantity
                 product_size.save(update_fields=['quantity'])
 
                 # Update total stock in Product model

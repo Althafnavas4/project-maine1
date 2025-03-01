@@ -174,8 +174,8 @@
                         <div class="card-body">
                             <h4 class="card-title">{{product.name}}</h4>
                             <p class="card-text">{{product.dis}}</p>
-                            <p class="card-text"><s>${{product.price}}</s></p>
-                            <h4 class="card-title">${{product.offer_price}}</h4>
+                            <p class="card-text"><s>₹{{product.price}}</s></p>
+                            <h4 class="card-title">₹{{product.offer_price}}</h4>
                             {% if product.is_out_of_stock %}
                                 <p class="stock-message out-of-stock">Out of Stock</p>
                             {% else %}
