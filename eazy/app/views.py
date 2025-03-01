@@ -191,6 +191,47 @@ def register(req):
 
 
 
+def register(req):
+    if req.method == 'POST':
+        name = req.POST['name']
+        email = req.POST['email']
+        password = req.POST['password']
+        if User.objects.filter(email=email).exists():
+            messages.warning(req, "Email already registered")
+            return redirect('register')
+        otp = get_random_string(length=6, allowed_chars='0123456789')
+        req.session['otp'] = otp
+        req.session['email'] = email
+        req.session['name'] = name
+        req.session['password'] = password
+        send_mail(
+            'Your OTP Code',
+            f'Your OTP is: {otp}',
+            settings.EMAIL_HOST_USER, [email]
+        )
+        messages.success(req, "OTP sent to your email")
+        return redirect('verify_otp_reg')
+    return render(req, 'user/register.html')
+
+def verify_otp_reg(req):
+    if req.method == 'POST':
+        entered_otp = req.POST['otp'] 
+        stored_otp = req.session.get('otp')
+        email = req.session.get('email')
+        name = req.session.get('name')
+        password = req.session.get('password')
+        if entered_otp == stored_otp:
+            user = User.objects.create_user(first_name=name,email=email,password=password,username=email)
+            user.is_verified = True
+            user.save()      
+            messages.success(req, "Registration successful! You can now log in.")
+            send_mail('User Registration Succesfull', 'Account Created Succesfully And Welcome To eazy', settings.EMAIL_HOST_USER, [email])
+            return redirect(eazy_login)
+        else:
+            messages.warning(req, "Invalid OTP. Try again.")
+            return redirect('verify_otp_reg')
+
+    return render(req, 'verify.html')
 
 
       
@@ -1109,7 +1150,7 @@ def payment_success(request):
 
             with transaction.atomic():
                 # Deduct stock after successful payment
-                product_size.quantity = F('quantity') - buy.quantity
+                product_size.quantity = F('quantity') + buy.quantity
                 product_size.save(update_fields=['quantity'])
 
                 # Update total stock in Product model

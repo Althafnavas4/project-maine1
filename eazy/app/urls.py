@@ -57,5 +57,6 @@ urlpatterns=[
     path('create-order/<int:buy_id>/', views.create_order, name='create_order'),
     path('create_order2/<int:buy_id>/', views.create_razorpay_order, name="create_razorpay_order"),
     path('payment_success/', views.payment_success, name="payment_success"),
+    path('verify_otp_reg',views.verify_otp_reg, name='verify_otp_reg')
     
 ]
